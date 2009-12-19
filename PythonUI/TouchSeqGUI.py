@@ -23,7 +23,7 @@ class MainMenu():
     def trackPress(self, pos):
         col = pos[0]
         row = pos[1]
-        track = int(round((row / 60) + 0.5))
+        track = int(round(row / 60))
         mainObj.modeChange(2)
         
 
@@ -139,7 +139,7 @@ class GridTrack():
     def drawPatternSeq(self):
         for col in range(8):
             for row in range(8):
-                if (7 - self.patterngrid[col]) == row:
+                if (self.patterngrid[col]) == row:
                     self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
                 else:
                     self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
@@ -195,18 +195,14 @@ class GridTrack():
 
     def mouseInput(self, pos):
         if self.trackMode == 'grid':
-            print "grid"
             self.inputGridScreen(pos)
         elif self.trackMode == 'options':
-            print "options"
             self.inputOptionsScreen(pos)
-        print "other"
-
 
 
     def inputGridScreen(self, pos):
-        col = int(round((pos[0] / 64) - 0.5))
-        row = int(round((pos[1] / 64) - 0.5))
+        col = int(round(pos[0] / 64))
+        row = int(round(pos[1] / 64))
         
         if row < 8:
             self.updateGridButton(col, row)
@@ -226,14 +222,16 @@ class GridTrack():
         elif col == 12 or col == 13:
             blah = 1
         elif col == 14 or col == 15:
+            self.patternNumber = 1
+            self.trackMode = 'grid'
             mainObj.modeChange(1)
         
     
     def inputOptionsScreen(self, pos):
         col = pos[0]
         row = pos[1]
-        col = int(round((col / 64) - 0.5))
-        row = int(round((row / 64) - 0.5))
+        col = int(round(col / 64))
+        row = int(round(row / 64))
         if row < 8 and col < 8:
             self.updatePatternSeq(col,row)
         else:
