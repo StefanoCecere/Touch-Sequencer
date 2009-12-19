@@ -61,6 +61,7 @@ class GridTrack():
         self.patterngrid = [0 for col in range(8)]
         self.midinotes   = [0 for notes in range(8)]
         
+        self.updateValue      = ''
         
         self.playing          = 0
         self.midiChannel      = 1
@@ -112,21 +113,21 @@ class GridTrack():
         self.trackSurface.blit(self.optionsbg, (512,0))
         for note in range(8):
             noteval = str(self.midinotes[note])
-            font = pygame.font.Font(None, 32)
+            font = pygame.font.Font(None, 52)
             notetext = font.render(noteval, 1, (255, 255, 255))
-            textpos = (600,((note * 36) + 84))
+            textpos = (600,((note * 40) + 64 + 4))
             self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiChannel)
-        font = pygame.font.Font(None, 32)
+        font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (856,212)
+        textpos = ((832 + 4),(192 + 4))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiVelocity)
-        font = pygame.font.Font(None, 32)
+        font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (856,84)
+        textpos = ((832 + 4),(64 + 4))
         self.trackSurface.blit(notetext, textpos)
 
     def drawPlayButton(self):
@@ -183,7 +184,9 @@ class GridTrack():
 
     def updatePatternSeq(self, col, row):
         self.patterngrid[col] = row
-        
+
+    def updatePatternSeqLength(self, col):
+        self.patternSeqLength = (col - 7)
 
     def clearGrid(self):
         for col in range(16):
@@ -222,20 +225,38 @@ class GridTrack():
         elif col == 12 or col == 13:
             blah = 1
         elif col == 14 or col == 15:
-            self.patternNumber = 1
+            self.patternNumber = 0
             self.trackMode = 'grid'
             mainObj.modeChange(1)
-        
+
+    def inputMidiOptions(self, pos):
+        xval = pos[0]
+        yval = pos[1]
+        col = int(round(xval / 64))
+        row = int(round(yval / 64))
+        if 8 < col < 11 and 0 < row < 6:
+            note = ((yval - 64) / 40)
+            print "midi note", note
+        elif 12 < col < 15 and row == 1:
+            print "velocity"
+        elif 12 < col < 15 and row == 3:
+            print "channel"
+        elif 12 < col < 15 and row == 5:
+            print "play"
     
     def inputOptionsScreen(self, pos):
         col = pos[0]
         row = pos[1]
         col = int(round(col / 64))
         row = int(round(row / 64))
-        if row < 8 and col < 8:
-            self.updatePatternSeq(col,row)
-        else:
+        if row > 7:
             self.navButtonInterface(col)
+        elif col < 8:
+            self.updatePatternSeq(col,row)
+        elif row == 7:
+            self.updatePatternSeqLength(col)
+        else:
+            self.inputMidiOptions(pos)
 
     def drawScreen(self):
         if self.trackMode == 'options':
@@ -294,10 +315,8 @@ class Globject():
             self.mode = mode
             if mode == 1:
                 self.modeObject = self.menu
-                print "mode change"
             elif mode == 2:
                 self.modeObject = self.grid
-                print "mode change"
 
 def main():
 
