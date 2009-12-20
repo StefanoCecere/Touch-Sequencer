@@ -30,132 +30,178 @@
 
 import OSC
 import socket
+from threading import Thread
 
 # globals
-addressManager = 0
-outSocket = 0
+outSocket = 0 
+addressManager = 0 
+oscThread = 0
 
 
-def init():#ipAddr, port):
-    """ inits manager and outsocket
+
+
+def init() :
+    """ instantiates address manager and outsocket as globals
     """
-    createSender()
-    createCallBackManager()
-
-def createSender():
-    """create and return outbound socket"""
-    global outSocket
+    global outSocket, addressManager
     outSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-def createCallBackManager():
-    global addressManager
     addressManager = OSC.CallbackManager()
-
-def createListener(ipAddr, port):
-    """create and return an inbound socket
-    """
-    l = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    l.bind((ipAddr, port))
-    l.setblocking(0) # if not waits for msgs to arrive blocking other events
-    return l
+    
 
 def bind(func, oscaddress):
-    """ bind certains oscaddresses with certain functions in address manager
+    """ bind given oscaddresses with given functions in address manager
     """
     addressManager.add(func, oscaddress)
 
-#################################
+
+def sendMsg(oscAddress, dataArray=[], ipAddr='127.0.0.1', port=9000) :
+    """create and send normal OSC msgs
+        defaults to '127.0.0.1', port 9000
+    """
+    outSocket.sendto( createBinaryMsg(oscAddress, dataArray),  (ipAddr, port))
+
+
+def createBundle():
+    """create bundled type of OSC messages
+    """
+    b = OSC.OSCMessage()
+    b.address = ""
+    b.append("#bundle")
+    b.append(0)
+    b.append(0)
+    return b
+
+
+def appendToBundle(bundle, oscAddress, dataArray):
+    """create OSC mesage and append it to a given bundle
+    """
+    bundle.append( createBinaryMsg(oscAddress, dataArray),  'b')
+
+
+def sendBundle(bundle, ipAddr='127.0.0.1', port=9000) :
+    """convert bundle to a binary and send it
+    """
+    outSocket.sendto(bundle.message, (ipAddr, port))
+
 
 def createBinaryMsg(oscAddress, dataArray):
-    """create and return general type binary OSC msg"""
+    """create and return general type binary OSC msg
+    """
     m = OSC.OSCMessage()
-    m.setAddress(oscAddress)
+    m.address = oscAddress
 
     for x in dataArray:  ## append each item of the array to the message
         m.append(x)
 
     return m.getBinary() # get the actual OSC to send
 
-def sendOSC(stufftosend, ipAddr, port): # outSocket, 
-    """ send OSC msg or bundle as binary"""
-    outSocket.sendto(stufftosend, (ipAddr, port))
 
-####################################################### user interface below:
-
-############################### send message
-
-def sendMsg(oscAddress, dataArray, ipAddr, port):#, outSocket):
-    """create and send normal OSC msgs"""
-    msg = createBinaryMsg(oscAddress, dataArray)
-    sendOSC(msg, ipAddr, port)  # outSocket, 
-
-############################### bundle stuff + send bundle
-
-def createBundle():
-    """create bundled type of OSC messages"""
-    b = OSC.OSCMessage()
-    b.setAddress("")
-    b.append("#bundle")
-    b.append(0)
-    b.append(0)
-    return b
-
-def appendToBundle(bundle, oscAddress, dataArray):
-    """create OSC mesage and append it to a given bundle"""
-    OSCmsg = createBinaryMsg(oscAddress, dataArray)
-    bundle.append(OSCmsg, 'b')
-
-def sendBundle(bundle, ipAddr, port):#, outSocket):
-    """convert bundle to a binary and send it"""
-    sendOSC(bundle.message, ipAddr, port) # outSocket
 
 ################################ receive osc from The Other.
 
-def getOSC(inSocket):#, addressManager):
-    """try to get incoming OSC and send it to callback manager (for osc addresses)"""
+class OSCServer(Thread) :
+    def __init__(self, ipAddr='127.0.0.1', port = 9001) :
+        Thread.__init__(self)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try :
+            self.socket.bind( (ipAddr, port) )
+            # self.socket.settimeout(1.0) # make sure its not blocking forever...
+            self.haveSocket = True
+        except socket.error :
+            print 'there was an error binding to ip %s and port %i , maybe the port is already taken by another process?' % (ipAddr. port)
+            self.haveSocket=False
+            
+    def run(self) :
+        if self.haveSocket :
+            self.isRunning = True
+            while self.isRunning :
+                try :
+                    while 1:
+                        addressManager.handle( self.socket.recv(1024) ) # self.socket.recvfrom(2**13)
+                except :
+                    return "no data arrived" # not data arrived
+
+
+def listen(ipAddr='127.0.0.1', port = 9001) :
+    """  creates a new thread listening to that port 
+    defaults to ipAddr='127.0.0.1', port 9001
+    """
+    global oscThread
+    oscThread = OSCServer( ipAddr, port )
+    oscThread.start()
+    
+
+def dontListen() :
+    """ closes the socket and kills the thread
+    """
+    global oscThread
+    if oscThread :
+        oscThread.socket.close()
+        oscThread.isRunning = 0 # kill it and free the socket
+        oscThread = 0
+        
+
+
+##########################################
+# OLD METHOD before chris implemented threads ## in case someone wants to use it ..
+def createListener(ipAddr='127.0.0.1', port = 9001) :
+    """ returns a blocked socket. This is part of the old system, better use now listen()
+    """
+    l = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    
+    try :
+        l.bind( (ipAddr, port) )
+    except socket.error:
+        print 'there was an error binding to ip %s and port %i , maybe the port is already taken by another process?' % (ipAddr. port)
+        return 0
+    
+    l.setblocking(0) # if not this it waits for msgs to arrive blocking other events
+##    l.settimeout(0) # does same as line above but avobe only boolean, this takes float
+    
+    return l
+
+def getOSC(inSocket):
+    """try to get incoming OSC on the socket and send it to callback manager (for osc addresses).
+    This is part of the old system that was pulling, better use now listen() 
+    """
     try:
         while 1:
-            data = inSocket.recv(1024)
-            addressManager.handle(data)
+            addressManager.handle( inSocket.recv(1024) ) # self.socket.recvfrom(2**13)
     except:
-        return "nodata" # not data arrived
-################################
+        return "no data arrived" # not data arrived
+##########################################
 
 
 
 
 if __name__ == '__main__':
-
-
-# example of how to use oscAPI
-# the following would typically be done in your main program,
-# but calling the functions here above.
-
-    init()
-    inSocket = createListener("127.0.0.1", 9001)
+    # example of how to use oscAPI
+    
+    listen() # defaults to "127.0.0.1", 9001
 
     # add addresses to callback manager
     def printStuff(msg):
-        """deals with "print" tagged OSC addresses """
-
+        """deals with "print" tagged OSC addresses
+        """
         print "printing in the printStuff function ", msg
         print "the oscaddress is ", msg[0]
         print "the value is ", msg[2]
 
     bind(printStuff, "/test")
 
-    #send normal msg
+    #send normal msg, two ways
     sendMsg("/test", [1, 2, 3], "127.0.0.1", 9000)
+    sendMsg("/test2", [1, 2, 3]) # defaults to "127.0.0.1", 9000
+    sendMsg("/hello") # defaults to [], "127.0.0.1", 9000
 
-    # create and send bundle
+    # create and send bundle, to ways to send
     bundle = createBundle()
     appendToBundle(bundle, "/testing/bundles", [1, 2, 3])
     appendToBundle(bundle, "/testing/bundles", [4, 5, 6])
     sendBundle(bundle, "127.0.0.1", 9000)
+    sendBundle(bundle) # defaults to "127.0.0.1", 9000
 
-    # receive OSC
-    getOSC(inSocket)
-
+    dontListen()  # finally close the connection bfore exiting or program
 
 
 

@@ -134,6 +134,15 @@ def readLong(data):
     return (big, rest)
 
 
+def readDouble(data):
+    """Tries to interpret the next 8 bytes of the data
+    as a 64-bit double float."""
+    floater = struct.unpack(">d", data[0:8])
+    big = float(floater[0])
+    rest = data[8:]
+    return (big, rest)
+
+
 
 def readFloat(data):
     if(len(data)<4):
@@ -163,12 +172,13 @@ def OSCBlob(next):
     return (tag, binary)
 
 
+
 def OSCArgument(next):
     """Convert some Python types to their
     OSC binary representations, returning a
     (typetag, data) tuple."""
 
-    if type(next) == type(""):
+    if type(next) == type("") or type(next) == type(u""):
         OSCstringLength = math.ceil((len(next)+1) / 4.0) * 4
         binary  = struct.pack(">%ds" % (OSCstringLength), next)
         tag = "s"
@@ -183,6 +193,7 @@ def OSCArgument(next):
         tag = ""
 
     return (tag, binary)
+
 
 
 def parseArgs(args):
@@ -209,7 +220,7 @@ def parseArgs(args):
 
 def decodeOSC(data):
     """Converts a typetagged OSC message to a Python list."""
-    table = {"i":readInt, "f":readFloat, "s":readString, "b":readBlob}
+    table = { "i" : readInt, "f" : readFloat, "s" : readString, "b" : readBlob, "d" : readDouble }
     decoded = []
     address,  rest = readString(data)
     typetags = ""
@@ -293,6 +304,12 @@ class CallbackManager:
         # first two elements are #bundle and the time tag, rest are messages.
         for message in messages[2:]:
             self.dispatch(message)
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
