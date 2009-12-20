@@ -14,6 +14,7 @@ class MainMenu():
         self.mainBG, self.mainBGrect = load_image('mainMenu.bmp')
         
         self.playingTracks = [0 for notes in range(10)]
+        self.bpm = 140
         
         self.mainSurface = pygame.Surface((1024,600))
         self.mainSurface = self.mainSurface.convert()
@@ -25,21 +26,60 @@ class MainMenu():
         row = pos[1]
         track = int(round(row / 60))
         mainObj.modeChange(2)
-        
+
+    def changeBpm(self, value):
+        bpm = self.bpm + value
+        if bpm < 80:
+            bpm = 80
+        elif bpm > 300:
+            bpm = 300
+        self.bpm = bpm
+
 
     def optionsPress(self, pos):
-        row = pos[0]
-        pos = pos[1]
+        xval = int(round(pos[0] / 32))
+        yval = int(round(pos[1] / 32))
+        
+        bpmRect = ((20,2),(31,11))
+        playRect = ((22,14),(29,17))
+        
+        if 18 < xval < 31 and 1 < yval < 11:
+        
+            if yval < 4:
+                xval = (xval - 18)
+                if xval < 5:
+                    self.changeBpm(100)
+                elif xval > 8:
+                    self.changeBpm(10)
+                else:
+                    self.changeBpm(10)
+            elif yval > 8:
+                xval = (xval - 18)
+                if xval < 5:
+                    self.changeBpm(-100)
+                elif xval > 8:
+                    self.changeBpm(-10)
+                else:
+                    self.changeBpm(-1)
+                
+        elif 20 < xval < 29 and 13 < yval < 17:
+            print 'in play area'
 
 
     def drawScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
+        bpm = str(self.bpm)
+        font = pygame.font.Font(None, 256)
+        bpmtext = font.render(bpm, 1, (255, 255, 255))
+        textpos = ((20 * 32),(4 * 32))
+        self.mainSurface.blit(bpmtext, textpos)
+        
         return self.mainSurface
         
     def mouseInput(self, pos):
         col = pos[0]
         row = pos[1]
-        if col >= 600:
+        if col >= 576:
             self.optionsPress(pos)
         else:
             self.trackPress(pos)
@@ -94,7 +134,6 @@ class GridTrack():
                 elif buttonval == 4:
                     self.trackSurface.blit(self.button5, ((col * 64),(row * 64)))
 
-
     def drawNavButtons(self):
         for col in range(12):
             if col < 8:
@@ -107,7 +146,6 @@ class GridTrack():
                     self.trackSurface.blit(self.navButtonWide1, ((((col - 8) * 128) + 512),512))
                 else:
                     self.trackSurface.blit(self.navButtonWide2, ((((col - 8) * 128) + 512),512))
-
 
     def drawMidiOptions(self):
         self.trackSurface.blit(self.optionsbg, (512,0))
@@ -129,13 +167,6 @@ class GridTrack():
         notetext = font.render(noteval, 1, (255, 255, 255))
         textpos = ((832 + 4),(64 + 4))
         self.trackSurface.blit(notetext, textpos)
-
-    def drawPlayButton(self):
-        buttonval = self.playing
-        if buttonval == 0:
-            self.trackSurface.blit(self.button1, (856,320))
-        elif buttonval == 1:
-            self.trackSurface.blit(self.button2, (856,320))
 
     def drawPatternSeq(self):
         for col in range(8):
@@ -168,7 +199,6 @@ class GridTrack():
         self.drawPatternSeq()
         self.drawPatternSeqLength()
         self.drawMidiOptions()
-        self.drawPlayButton()
         self.drawNavButtons()
 
         
