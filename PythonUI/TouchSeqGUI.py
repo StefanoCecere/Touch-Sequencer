@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
 #Import Modules
-import os, pygame
+import os, pygame, osc
 
 from pygame.locals import *
 from pygame.compat import geterror
-
-pygame.init()
-
-
+    
 class MainMenu():
     def __init__(self):
-        self.mainBG, self.mainBGrect = load_image('mainMenu.bmp')
+        self.mainBG, self.mainBGrect = load_image('mainMenu.bmp','backgrounds')
+        self.gobutton, self.gobuttonrect = load_image('gobutton.bmp','buttons')
+        self.stopbutton, self.stopbuttonrect = load_image('stopbutton.bmp','buttons')
         
         self.playingTracks = [0 for notes in range(10)]
         self.bpm = 140
+        self.globalplay = 0
+        self.trackNo = 0
         
         self.mainSurface = pygame.Surface((1024,600))
         self.mainSurface = self.mainSurface.convert()
@@ -22,10 +23,21 @@ class MainMenu():
         self.mainSurface.fill((250, 250, 250))
 
     def trackPress(self, pos):
-        col = pos[0]
-        row = pos[1]
-        track = int(round(row / 60))
-        mainObj.modeChange(2)
+        xval = pos[0]
+        yval = pos[1]
+        
+        track = int(round(yval / 60))
+        self.trackNo = track
+        sendOSCMessage('/grid/track_select', [track + 1])
+        if 444 < xval < 544:
+            if self.playingTracks[track] == 0:
+                self.playingTracks[track] = 1
+            else:
+                self.playingTracks[track] = 0
+            sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
+        else:
+            sendOSCMessage('/grid/track/get/pattern_grid', [0])
+            mainObj.modeChange(2)
 
     def changeBpm(self, value):
         bpm = self.bpm + value
@@ -34,7 +46,7 @@ class MainMenu():
         elif bpm > 300:
             bpm = 300
         self.bpm = bpm
-
+        sendOSCMessage('/bpm', [self.bpm])
 
     def optionsPress(self, pos):
         xval = int(round(pos[0] / 32))
@@ -63,19 +75,31 @@ class MainMenu():
                     self.changeBpm(-1)
                 
         elif 20 < xval < 29 and 13 < yval < 17:
-            print 'in play area'
+            if self.globalplay == 0:
+                self.globalplay = 1
+            else:
+                self.globalplay = 0
+            sendOSCMessage('/global_play', [self.globalplay])
 
-
-    def drawScreen(self):
+    def drawMainScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
         bpm = str(self.bpm)
         font = pygame.font.Font(None, 256)
         bpmtext = font.render(bpm, 1, (255, 255, 255))
         textpos = ((20 * 32),(4 * 32))
         self.mainSurface.blit(bpmtext, textpos)
-        
+        for tracks in range(10):
+            pos = (444, ((tracks *60) + 5))
+            if self.playingTracks[tracks] == 1:
+                self.mainSurface.blit(self.gobutton, pos)
+            else:
+                self.mainSurface.blit(self.stopbutton, pos)
+    
+
+    def drawScreen(self):
+        self.drawMainScreen()
         return self.mainSurface
-        
+
     def mouseInput(self, pos):
         col = pos[0]
         row = pos[1]
@@ -83,19 +107,18 @@ class MainMenu():
             self.optionsPress(pos)
         else:
             self.trackPress(pos)
-            
 
 
 class GridTrack():
 
     def __init__(self):
-        self.button1, self.button1rect               = load_image('button1.bmp')
-        self.button2, self.button1rect               = load_image('button2.bmp')
-        self.navButton1, self.navButton1rect         = load_image('navButton1.bmp')
-        self.navButton2, self.navButton2rect         = load_image('navButton2.bmp')
-        self.navButtonWide1, self.navButtonWide1rect = load_image('navButtonWide1.bmp')
-        self.navButtonWide2, self.navButtonWide2rect = load_image('navButtonWide2.bmp')
-        self.optionsbg, self.optionsbgrect           = load_image('optionsBG.bmp')
+        self.button1, self.button1rect               = load_image('button1.bmp','buttons')
+        self.button2, self.button1rect               = load_image('button2.bmp','buttons')
+        self.navButton1, self.navButton1rect         = load_image('navButton1.bmp','buttons')
+        self.navButton2, self.navButton2rect         = load_image('navButton2.bmp','buttons')
+        self.navButtonWide1, self.navButtonWide1rect = load_image('navButtonWide1.bmp','buttons')
+        self.navButtonWide2, self.navButtonWide2rect = load_image('navButtonWide2.bmp','buttons')
+        self.optionsbg, self.optionsbgrect           = load_image('optionsBG.bmp','backgrounds')
         
         self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
         self.patterngrid = [0 for col in range(8)]
@@ -103,6 +126,8 @@ class GridTrack():
         
         self.updateValue      = ''
         
+        self.gridpattern      = 0
+
         self.playing          = 0
         self.midiChannel      = 1
         self.midiVelocity     = 1
@@ -176,6 +201,13 @@ class GridTrack():
                 else:
                     self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
 
+    def drawPlayButton(self):
+        buttonval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
+        if buttonval == 0:
+            self.trackSurface.blit(self.navButton1, (832,320))
+        elif buttonval == 1:
+            self.trackSurface.blit(self.navButton2, (832,320))
+
     def drawPatternSeqLength(self):
         for seqlength in range(8):
             seqlength += 1
@@ -200,6 +232,7 @@ class GridTrack():
         self.drawPatternSeqLength()
         self.drawMidiOptions()
         self.drawNavButtons()
+        self.drawPlayButton()
 
         
     # functions that will be called from OSC messages
@@ -211,12 +244,32 @@ class GridTrack():
         self.trackgrid[col][row] = self.trackgrid[col][row] + 1
         if self.trackgrid[col][row] > 1:
             self.trackgrid[col][row] = 0
+        data = [row + 1, col + 1, self.trackgrid[col][row]]
+        sendOSCMessage('/grid/track/edit/pattern_grid', data)
 
     def updatePatternSeq(self, col, row):
         self.patterngrid[col] = row
+        data = [col, (7 - row)]
+        sendOSCMessage('/grid/track/edit/pattern_seq', data)
 
     def updatePatternSeqLength(self, col):
         self.patternSeqLength = (col - 7)
+        sendOSCMessage('/grid/track/edit/pattern_seq_length', [self.patternSeqLength])
+
+    def editPatternSeq(self, *msg):
+        xval = msg[0][2]
+        yval = 7 - msg[0][3]
+        self.patterngrid[xval] = yval
+
+    def editPatternSeqLength(self, *msg):
+        length = msg[0][2]
+        self.patternSeqLength = length
+
+    def editGrid(self, *msg):
+        yval = (msg[0][2] - 1)
+        xval = (msg[0][3] - 1)
+        dval = msg[0][4]
+        self.trackgrid[xval][yval] = dval
 
     def clearGrid(self):
         for col in range(16):
@@ -245,11 +298,16 @@ class GridTrack():
     
     def navButtonInterface(self, col):
         if col < 8:
+            sendOSCMessage('/grid/track/get/pattern_grid', [col])
+            sendOSCMessage('/grid/track/edit/pattern_number', [col])
+            self.gridpattern = col
             self.patternNumber = col
             self.trackMode = 'grid'
         elif col == 8 or col == 9:
             self.patternNumber = 8
             self.trackMode = 'options'
+            sendOSCMessage('/grid/track/get/pattern_seq',["bang"])
+            sendOSCMessage('/grid/track/get/pattern_seq_length',["bang"])
         elif col == 10 or col == 11:
             blah = 1
         elif col == 12 or col == 13:
@@ -272,7 +330,13 @@ class GridTrack():
         elif 12 < col < 15 and row == 3:
             print "channel"
         elif 12 < col < 15 and row == 5:
-            print "play"
+            playval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
+            if playval == 0:
+                mainObj.menu.playingTracks[mainObj.menu.trackNo] = 1
+                sendOSCMessage('/grid/track/control/play', 1)
+            if playval == 1:
+                mainObj.menu.playingTracks[mainObj.menu.trackNo] = 0
+                sendOSCMessage('/grid/track/control/play', 0)
     
     def inputOptionsScreen(self, pos):
         col = pos[0]
@@ -300,10 +364,11 @@ class GridTrack():
 
 
 #functions to create our resources
-def load_image(name, colorkey=None):
+def load_image(name, subdir, colorkey=None):
 
     main_dir = os.path.split(os.path.abspath(__file__))[0]
     data_dir = os.path.join(main_dir, 'gfx')
+    data_dir = os.path.join(data_dir, subdir)
 
     fullname = os.path.join(data_dir, name)
     try:
@@ -319,6 +384,12 @@ def load_image(name, colorkey=None):
     return image, image.get_rect()
 
 
+def sendOSCMessage(address, value):
+
+    print address, value
+
+#    osc.sendMsg(address, value, '192.168.2.3', 9002)
+    osc.sendMsg(address, value, '127.0.0.1', 9002)
 
 
 class Globject():
@@ -348,15 +419,37 @@ class Globject():
             elif mode == 2:
                 self.modeObject = self.grid
 
+
+def printStuff(*msg):
+    """deals with "print" tagged OSC addresses """
+
+    print "printing in the printStuff function ", msg
+    print "the oscaddress is ", msg[0][0]
+    print "the value is ", msg[0][2]
+    print "the value is ", msg[0][3]
+
+
+
+
 def main():
 
 
     global mainObj
 
+    pygame.init()
+
+    osc.init()
+    osc.listen('127.0.0.1', 9001)
+
     mainObj = Globject()
     
     clock = pygame.time.Clock()
 
+    osc.bind(mainObj.grid.editGrid, "/grid/pattern_grid/edit")
+    
+    osc.bind(mainObj.grid.editPatternSeqLength, "/grid/pattern_seq/length")
+    osc.bind(mainObj.grid.editPatternSeq, "/grid/pattern_seq")
+    
     loop = True
     while loop:
         clock.tick(60)
@@ -371,6 +464,7 @@ def main():
         mainObj.drawStuff()
 
 
+    osc.dontListen()
     pygame.quit()
 
 
