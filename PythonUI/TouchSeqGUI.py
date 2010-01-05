@@ -176,21 +176,21 @@ class GridTrack():
         self.trackSurface.blit(self.optionsbg, (512,0))
         for note in range(8):
             noteval = str(self.midinotes[note])
-            font = pygame.font.Font(None, 52)
+            font = pygame.font.Font(None, 62)
             notetext = font.render(noteval, 1, (255, 255, 255))
-            textpos = (600,((note * 40) + 64 + 4))
+            textpos = ((550 + 4),((note * 48) + 32 + 6))
             self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiChannel)
         font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = ((832 + 4),(192 + 4))
+        textpos = (709,(256 + 3))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiVelocity)
         font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = ((832 + 4),(64 + 4))
+        textpos = (869,(256 + 3))
         self.trackSurface.blit(notetext, textpos)
 
     def drawPatternSeq(self):
@@ -204,9 +204,9 @@ class GridTrack():
     def drawPlayButton(self):
         buttonval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
         if buttonval == 0:
-            self.trackSurface.blit(self.navButton1, (832,320))
+            self.trackSurface.blit(self.navButton1, (768,352))
         elif buttonval == 1:
-            self.trackSurface.blit(self.navButton2, (832,320))
+            self.trackSurface.blit(self.navButton2, (768,352))
 
     def drawPatternSeqLength(self):
         for seqlength in range(8):
