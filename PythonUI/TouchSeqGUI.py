@@ -124,7 +124,9 @@ class GridTrack():
         self.patterngrid = [0 for col in range(8)]
         self.midinotes   = [0 for notes in range(8)]
         
-        self.updateValue      = ''
+        self.updateValue      = -1
+        self.newValue         = 0
+        self.oldValue         = 0
         
         self.gridpattern      = 0
 
@@ -320,24 +322,66 @@ class GridTrack():
     def inputMidiOptions(self, pos):
         xval = pos[0]
         yval = pos[1]
-        col = int(round(xval / 64))
-        row = int(round(yval / 64))
-        if 8 < col < 11 and 0 < row < 6:
-            note = ((yval - 64) / 40)
+        col = int(round(xval / 32))
+        row = int(round(yval / 32))
+        if 16 < col < 21 and 0 < row < 13:
+            note = ((yval - 32) / 48)
+            self.updateValue = note
+            self.oldValue = self.midinotes[note]
             print "midi note", note
-        elif 12 < col < 15 and row == 1:
+        elif 21 < col < 31 and 0 < row < 7:
+            self.keypadPress(col, row)
+        elif 21 < col < 26 and 7 < row < 10:
             print "velocity"
-        elif 12 < col < 15 and row == 3:
+            self.oldValue = self.midiVelocity
+            self.updateValue = 8
+        elif 26 < col < 31 and 7 < row < 10:
             print "channel"
-        elif 12 < col < 15 and row == 5:
+            self.oldValue = self.midiChannel
+            self.updateValue = 9
+        elif 23 < col < 29 and 10 < row < 13:
+            self.updateValue = -1
             playval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
             if playval == 0:
                 mainObj.menu.playingTracks[mainObj.menu.trackNo] = 1
-                sendOSCMessage('/grid/track/control/play', 1)
+                sendOSCMessage('/grid/track/control/play', [1])
             if playval == 1:
                 mainObj.menu.playingTracks[mainObj.menu.trackNo] = 0
-                sendOSCMessage('/grid/track/control/play', 0)
-    
+                sendOSCMessage('/grid/track/control/play', [0])
+        else:
+            self.updateValue = -1
+
+    def keypadPress(self, col, row):
+        if self.updateValue != -1:
+            if 0 < row < 3:
+                if 21 < col < 24:
+                    print "1"
+                if 23 < col < 26:
+                    print "2"
+                if 25 < col < 28:
+                    print "3"
+                if 27 < col < 31:
+                    print "enter"
+            if 2 < row < 5:
+                if 21 < col < 24:
+                    print "4"
+                if 23 < col < 26:
+                    print "5"
+                if 25 < col < 28:
+                    print "6"
+                if 27 < col < 31:
+                    print "cancel"
+            if 4 < row < 7:
+                if 21 < col < 24:
+                    print "7"
+                if 23 < col < 26:
+                    print "8"
+                if 25 < col < 28:
+                    print "9"
+                if 27 < col < 30:
+                    print "0"
+
+
     def inputOptionsScreen(self, pos):
         col = pos[0]
         row = pos[1]
@@ -345,10 +389,13 @@ class GridTrack():
         row = int(round(row / 64))
         if row > 7:
             self.navButtonInterface(col)
+            self.updateValue = -1
         elif col < 8:
             self.updatePatternSeq(col,row)
+            self.updateValue = -1
         elif row == 7:
             self.updatePatternSeqLength(col)
+            self.updateValue = -1
         else:
             self.inputMidiOptions(pos)
 
