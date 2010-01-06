@@ -168,10 +168,14 @@ class GridTrack():
         self.patternSeqLength = length
 
     def editGrid(self, *msg):
-        yval = (msg[0][2] - 1)
-        xval = (msg[0][3] - 1)
-        dval = msg[0][4]
-        self.trackgrid[xval][yval] = dval
+        if msg[0][2] == "clear":
+            self.clearGrid()
+        else:
+            yval = (msg[0][2] - 1)
+            xval = (msg[0][3] - 1)
+            if yval > 0 and xval > 0:
+                dval = msg[0][4]
+                self.trackgrid[xval][yval] = dval
 
     def clearGrid(self):
         for col in range(16):
