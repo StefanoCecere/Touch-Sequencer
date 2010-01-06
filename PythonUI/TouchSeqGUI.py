@@ -119,6 +119,8 @@ class GridTrack():
         self.navButtonWide1, self.navButtonWide1rect = load_image('navButtonWide1.bmp','buttons')
         self.navButtonWide2, self.navButtonWide2rect = load_image('navButtonWide2.bmp','buttons')
         self.optionsbg, self.optionsbgrect           = load_image('optionsBG.bmp','backgrounds')
+        self.gobutton, self.gobuttonrect             = load_image('gobutton.bmp','buttons')
+        self.stopbutton, self.stopbuttonrect         = load_image('stopbutton.bmp','buttons')
         
         self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
         self.patterngrid = [0 for col in range(8)]
@@ -131,13 +133,13 @@ class GridTrack():
         self.gridpattern      = 0
 
         self.playing          = 0
-        self.midiChannel      = 1
+        self.midiLength       = 1
         self.midiVelocity     = 1
+        self.midiChannel      = 1
         self.patternSeqLength = 1
         self.patternNumber    = 0
         
         self.trackMode = 'grid'
-        
         
         self.trackSurface = pygame.Surface((1024,600))
         self.trackSurface = self.trackSurface.convert()
@@ -183,16 +185,22 @@ class GridTrack():
             textpos = ((550 + 4),((note * 48) + 32 + 6))
             self.trackSurface.blit(notetext, textpos)
         
-        noteval = str(self.midiChannel)
+        noteval = str(self.midiLength)
         font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (709,(256 + 3))
+        textpos = (709,(354 + 2))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiVelocity)
         font = pygame.font.Font(None, 96)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (869,(256 + 3))
+        textpos = (869,(354 + 2))
+        self.trackSurface.blit(notetext, textpos)
+        
+        noteval = str(self.newValue)
+        font = pygame.font.Font(None, 96)
+        notetext = font.render(noteval, 1, (255, 255, 255))
+        textpos = (709,(222 + 4))
         self.trackSurface.blit(notetext, textpos)
 
     def drawPatternSeq(self):
@@ -206,9 +214,9 @@ class GridTrack():
     def drawPlayButton(self):
         buttonval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
         if buttonval == 0:
-            self.trackSurface.blit(self.navButton1, (768,352))
+            self.trackSurface.blit(self.stopbutton, (864,256))
         elif buttonval == 1:
-            self.trackSurface.blit(self.navButton2, (768,352))
+            self.trackSurface.blit(self.gobutton, (864,256))
 
     def drawPatternSeqLength(self):
         for seqlength in range(8):
@@ -278,6 +286,18 @@ class GridTrack():
             for row in range(8):
                 self.trackgrid[col][row] = 0
 
+    def editMidi(self, *msg):
+        param = msg[0][2]
+        if param == "notes":
+            notenum = (msg[0][3] - 1)
+            self.midinotes[notenum] = msg[0][4]
+        elif param == "velocity":
+            self.midiVelocity = msg[0][3]
+        elif param == "channel":
+            self.midiChannel = msg[0][3]
+        elif param == "length":
+            self.midiLength = msg[0][3]
+
 
     # mouse input functions
 
@@ -310,6 +330,7 @@ class GridTrack():
             self.trackMode = 'options'
             sendOSCMessage('/grid/track/get/pattern_seq',["bang"])
             sendOSCMessage('/grid/track/get/pattern_seq_length',["bang"])
+            sendOSCMessage('/grid/track/get/all_midi_params',["bang"])
         elif col == 10 or col == 11:
             blah = 1
         elif col == 12 or col == 13:
@@ -331,15 +352,15 @@ class GridTrack():
             print "midi note", note
         elif 21 < col < 31 and 0 < row < 7:
             self.keypadPress(col, row)
-        elif 21 < col < 26 and 7 < row < 10:
+        elif 21 < col < 26 and 10 < row < 13:
             print "velocity"
             self.oldValue = self.midiVelocity
             self.updateValue = 8
-        elif 26 < col < 31 and 7 < row < 10:
-            print "channel"
-            self.oldValue = self.midiChannel
+        elif 26 < col < 31 and 10 < row < 13:
+            print "Length"
+            self.oldValue = self.midiLength
             self.updateValue = 9
-        elif 23 < col < 29 and 10 < row < 13:
+        elif 26 < col < 31 and 7 < row < 10:
             self.updateValue = -1
             playval = mainObj.menu.playingTracks[mainObj.menu.trackNo]
             if playval == 0:
@@ -356,30 +377,77 @@ class GridTrack():
             if 0 < row < 3:
                 if 21 < col < 24:
                     print "1"
+                    self.newValue *= 10
+                    self.newValue += 1
                 if 23 < col < 26:
                     print "2"
+                    self.newValue *= 10
+                    self.newValue += 2
                 if 25 < col < 28:
                     print "3"
+                    self.newValue *= 10
+                    self.newValue += 3
                 if 27 < col < 31:
                     print "enter"
+                    if self.updateValue < 8:
+                        if self.newValue > 127:
+                            self.updateValue = -1
+                            self.newValue = 0
+                        else:
+                            self.midinotes[self.updateValue] = self.newValue
+                            data = [self.updateValue + 1, self.newValue]
+                            sendOSCMessage('/grid/track/edit/notes', data)
+                    elif self.updateValue == 8:
+                        if self.newValue > 127:
+                            self.updateValue = -1
+                            self.newValue = 0
+                        else:
+                            self.midiVelocity = self.newValue
+                            data = [self.newValue]
+                            sendOSCMessage('/grid/track/edit/midi_params/velocity', data)
+                    elif self.updateValue == 9:
+                        if self.newValue > 999:
+                            self.updateValue = -1
+                            self.newValue = 0
+                        else:
+                            self.midiLength = self.newValue
+                            data = [self.newValue]
+                            sendOSCMessage('/grid/track/edit/midi_params/length', data)
+                    self.updateValue = -1
+                    self.newValue = 0
             if 2 < row < 5:
                 if 21 < col < 24:
                     print "4"
+                    self.newValue *= 10
+                    self.newValue += 4
                 if 23 < col < 26:
                     print "5"
+                    self.newValue *= 10
+                    self.newValue += 5
                 if 25 < col < 28:
                     print "6"
+                    self.newValue *= 10
+                    self.newValue += 6
                 if 27 < col < 31:
                     print "cancel"
+                    self.updateValue = -1
+                    self.newValue = 0
             if 4 < row < 7:
                 if 21 < col < 24:
                     print "7"
+                    self.newValue *= 10
+                    self.newValue += 7
                 if 23 < col < 26:
                     print "8"
+                    self.newValue *= 10
+                    self.newValue += 8
                 if 25 < col < 28:
                     print "9"
+                    self.newValue *= 10
+                    self.newValue += 9
                 if 27 < col < 30:
                     print "0"
+                    self.newValue *= 10
 
 
     def inputOptionsScreen(self, pos):
@@ -493,6 +561,8 @@ def main():
     clock = pygame.time.Clock()
 
     osc.bind(mainObj.grid.editGrid, "/grid/pattern_grid/edit")
+
+    osc.bind(mainObj.grid.editMidi, "/grid/midi_params")
     
     osc.bind(mainObj.grid.editPatternSeqLength, "/grid/pattern_seq/length")
     osc.bind(mainObj.grid.editPatternSeq, "/grid/pattern_seq")
