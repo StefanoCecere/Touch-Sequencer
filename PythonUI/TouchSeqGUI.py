@@ -3,6 +3,8 @@
 #Import Modules
 import os, pygame, osc
 
+from multigrid import *
+
 from pygame.locals import *
 from pygame.compat import geterror
     
