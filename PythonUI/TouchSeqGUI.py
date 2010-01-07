@@ -102,13 +102,14 @@ class MainMenu():
         self.drawMainScreen()
         return self.mainSurface
 
-    def mouseInput(self, pos):
-        col = pos[0]
-        row = pos[1]
-        if col >= 576:
-            self.optionsPress(pos)
-        else:
-            self.trackPress(pos)
+    def mouseInput(self, type, pos):
+        if type == "down":
+            col = pos[0]
+            row = pos[1]
+            if col >= 576:
+                self.optionsPress(pos)
+            else:
+                self.trackPress(pos)
 
 
 
@@ -212,6 +213,18 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN :
                 mouseClick = pygame.mouse.get_pos()
                 mainObj.modeObject.mouseInput(mouseClick)
+                
+            if event.type == pygame.MOUSEBUTTONUP :
+                mousePosition = pygame.mouse.get_pos()
+                globalObject.mouseInput('up',mousePosition)
+                
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                mousePosition = pygame.mouse.get_pos()
+                globalObject.mouseInput('down',mousePosition)
+                
+            if event.type == pygame.MOUSEMOTION :
+                mousePosition = pygame.mouse.get_pos()
+                globalObject.mouseInput('drag',mousePosition)
         
         mainObj.drawStuff()
 

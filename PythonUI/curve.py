@@ -1,7 +1,7 @@
-import os, pygame, __main__
+import os, pygame, __main__, bresenhams
 
 
-class GridTrack():
+class CurveTrack():
 
     def __init__(self):
         self.button1, self.button1rect               = __main__.load_image('button1.bmp','buttons')
@@ -13,11 +13,12 @@ class GridTrack():
         self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.bmp','backgrounds')
         self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.bmp','buttons')
         self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.bmp','buttons')
-        
-        self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
-        self.patterngrid = [0 for col in range(8)]
-        self.midinotes   = [0 for notes in range(8)]
-        
+
+        self.curveArray = [0 for curveVal in range(256)]
+        self.ccNumbers   = [0 for numbers in range(8)]
+        self.ccLengths   = [1 for numbers in range(8)]
+
+
         self.updateValue      = -1
         self.newValue         = 0
         self.oldValue         = 0
@@ -25,13 +26,13 @@ class GridTrack():
         self.gridpattern      = 0
 
         self.playing          = 0
-        self.midiLength       = 1
-        self.midiVelocity     = 1
         self.midiChannel      = 1
-        self.patternSeqLength = 1
         self.patternNumber    = 0
         
-        self.trackMode = 'grid'
+        self.trackMode = 'curve'
+        
+        self.black = 0, 0, 0
+        self.prevPos = (0, 0)
         
         self.trackSurface = pygame.Surface((1024,600))
         self.trackSurface = self.trackSurface.convert()
@@ -40,20 +41,16 @@ class GridTrack():
     
     # display functions
     
-    def drawGrid(self):
-        for col in range(16):
-            for row in range(8):
-                buttonval = self.trackgrid[col][row]
-                if buttonval == 0:
-                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
-                elif buttonval == 1:
-                    self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
-                elif buttonval == 2:
-                    self.trackSurface.blit(self.button3, ((col * 64),(row * 64)))
-                elif buttonval == 3:
-                    self.trackSurface.blit(self.button4, ((col * 64),(row * 64)))
-                elif buttonval == 4:
-                    self.trackSurface.blit(self.button5, ((col * 64),(row * 64)))
+    def drawCurve(self):
+        print 'curve array', self.curveArray
+        pointList = []
+        for data in range(256):
+            dataVal = (512 - (self.curveArray[data] * 4))
+            point = (data * 4), dataVal
+            pointList.append(point)
+            
+        if len(pointList) > 1:
+            pygame.draw.lines(self.curveSurface, self.black, False, pointList)
 
     def drawNavButtons(self):
         for col in range(12):
@@ -70,38 +67,32 @@ class GridTrack():
 
     def drawMidiOptions(self):
         self.trackSurface.blit(self.optionsbg, (512,0))
-        for note in range(8):
-            noteval = str(self.midinotes[note])
+        for ccnumber in range(8):
+            ccval = str(self.ccNumbers[ccnumber])
             font = pygame.font.Font(None, 62)
-            notetext = font.render(noteval, 1, (255, 255, 255))
-            textpos = ((550 + 4),((note * 48) + 32 + 6))
-            self.trackSurface.blit(notetext, textpos)
+            displaytext = font.render(ccval, 1, (255, 255, 255))
+            textpos = ((550 + 4),((ccnumber * 48) + 32 + 6))
+            self.trackSurface.blit(displaytext, textpos)
         
-        noteval = str(self.midiLength)
+        channel = str(self.midiChannel)
         font = pygame.font.Font(None, 96)
-        notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (709,(354 + 2))
-        self.trackSurface.blit(notetext, textpos)
-        
-        noteval = str(self.midiVelocity)
-        font = pygame.font.Font(None, 96)
-        notetext = font.render(noteval, 1, (255, 255, 255))
+        displaytext = font.render(channel, 1, (255, 255, 255))
         textpos = (869,(354 + 2))
-        self.trackSurface.blit(notetext, textpos)
+        self.trackSurface.blit(displaytext, textpos)
         
-        noteval = str(self.newValue)
+        ccval = str(self.newValue)
         font = pygame.font.Font(None, 96)
-        notetext = font.render(noteval, 1, (255, 255, 255))
+        ccvaltext = font.render(ccval, 1, (255, 255, 255))
         textpos = (709,(222 + 4))
-        self.trackSurface.blit(notetext, textpos)
+        self.trackSurface.blit(ccvaltext, textpos)
 
-    def drawPatternSeq(self):
-        for col in range(8):
-            for row in range(8):
-                if (self.patterngrid[col]) == row:
-                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
-                else:
+    def drawCurveLengths(self):
+        for row in range(8):
+            for col in range(8):
+                if (self.ccLengths[row]) < col:
                     self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
+                else:
+                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
 
     def drawPlayButton(self):
         buttonval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
@@ -110,62 +101,53 @@ class GridTrack():
         elif buttonval == 1:
             self.trackSurface.blit(self.gobutton, (864,256))
 
-    def drawPatternSeqLength(self):
-        for seqlength in range(8):
-            seqlength += 1
-            if seqlength <= self.patternSeqLength:
-                xval = ((seqlength * 64) + (7 * 64))
-                yval = (7 * 64)
-                self.trackSurface.blit(self.button1, (xval,yval))
-            else:
-                xval = ((seqlength * 64) + (7 * 64))
-                yval = (7 * 64)
-                self.trackSurface.blit(self.button2, (xval,yval))
-
-
-    def drawGridScreen(self):
+    def drawCurveScreen(self):
         self.trackSurface.fill((250, 250, 250))
-        self.drawGrid()
+        self.drawCurve()
         self.drawNavButtons()
 
     def drawOptionsScreen(self):
         self.trackSurface.fill((250, 250, 250))
-        self.drawPatternSeq()
-        self.drawPatternSeqLength()
+        self.drawCurveLengths()
         self.drawMidiOptions()
         self.drawNavButtons()
         self.drawPlayButton()
 
-        
+
     # functions that will be called from OSC messages
-    
-    def setSeqStep(self, step):
-        self.trackgrid[col][row] = buttonval
 
-    def updateGridButton(self, col, row):
-        self.trackgrid[col][row] = self.trackgrid[col][row] + 1
-        if self.trackgrid[col][row] > 1:
-            self.trackgrid[col][row] = 0
-        data = [row + 1, col + 1, self.trackgrid[col][row]]
-        __main__.sendOSCMessage('/grid/track/edit/pattern_grid', data)
 
-    def updatePatternSeq(self, col, row):
-        self.patterngrid[col] = row
+    def updateCurveLength(self, col, row):
+        self.patterngrid[row] = col
         data = [col, (7 - row)]
         __main__.sendOSCMessage('/grid/track/edit/pattern_seq', data)
 
-    def updatePatternSeqLength(self, col):
-        self.patternSeqLength = (col - 7)
-        __main__.sendOSCMessage('/grid/track/edit/pattern_seq_length', [self.patternSeqLength])
-
-    def editPatternSeq(self, *msg):
-        xval = msg[0][2]
-        yval = 7 - msg[0][3]
-        self.patterngrid[xval] = yval
-
-    def editPatternSeqLength(self, *msg):
-        length = msg[0][2]
-        self.patternSeqLength = length
+    def mouseInput(self, type, pos):
+        if type == 'down':
+            xval = pos[0]
+            yval = (512 - pos[1])
+            xval = int(round(xval / 4))
+            yval = int(round(yval / 4))
+            self.prevPos = (xval, yval)
+        elif type == 'drag':            
+            xval = pos[0]
+            yval = (512 - pos[1])
+            xval = int(round(xval / 4))
+            yval = int(round(yval / 4))
+            
+            currentPos = (xval,yval)
+            
+            smoothPoints = bresenhams.smoothLine(currentPos, self.prevPos)
+            
+            for points in smoothPoints:
+                xval = points[0]
+                yval = points[1]
+                self.curveArray[xval] = yval
+            
+            self.prevPos = currentPos
+            
+            self.curveSurface.blit(self.mainBG, (0,0))
+            self.drawLines()
 
     def editGrid(self, *msg):
         if msg[0][2] == "clear":
@@ -184,9 +166,9 @@ class GridTrack():
 
     def editMidi(self, *msg):
         param = msg[0][2]
-        if param == "notes":
-            notenum = (msg[0][3] - 1)
-            self.midinotes[notenum] = msg[0][4]
+        if param == "ccnumber":
+            ccnumber = (msg[0][3] - 1)
+            self.ccNumbers[ccnumber] = msg[0][4]
         elif param == "velocity":
             self.midiVelocity = msg[0][3]
         elif param == "channel":
@@ -197,12 +179,11 @@ class GridTrack():
 
     # mouse input functions
 
-    def mouseInput(self, type, pos):
-        if type == "down":
-            if self.trackMode == 'grid':
-                self.inputGridScreen(pos)
-            elif self.trackMode == 'options':
-                self.inputOptionsScreen(pos)
+    def mouseInput(self, pos):
+        if self.trackMode == 'grid':
+            self.inputGridScreen(pos)
+        elif self.trackMode == 'options':
+            self.inputOptionsScreen(pos)
 
 
     def inputGridScreen(self, pos):
@@ -243,10 +224,10 @@ class GridTrack():
         col = int(round(xval / 32))
         row = int(round(yval / 32))
         if 16 < col < 21 and 0 < row < 13:
-            note = ((yval - 32) / 48)
-            self.updateValue = note
-            self.oldValue = self.midinotes[note]
-            print "midi note", note
+            ccnumber = ((yval - 32) / 48)
+            self.updateValue = ccnumber
+            self.oldValue = self.ccNumbers[ccnumber]
+            print "cc number", ccnumber
         elif 21 < col < 31 and 0 < row < 7:
             self.keypadPress(col, row)
         elif 21 < col < 26 and 10 < row < 13:
@@ -291,9 +272,9 @@ class GridTrack():
                             self.updateValue = -1
                             self.newValue = 0
                         else:
-                            self.midinotes[self.updateValue] = self.newValue
+                            self.ccNumbers[self.updateValue] = self.newValue
                             data = [self.updateValue + 1, self.newValue]
-                            __main__.sendOSCMessage('/grid/track/edit/notes', data)
+                            __main__.sendOSCMessage('/grid/track/edit/ccnumber', data)
                     elif self.updateValue == 8:
                         if self.newValue > 127:
                             self.updateValue = -1
