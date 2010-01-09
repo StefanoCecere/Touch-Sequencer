@@ -168,7 +168,7 @@ class GridTrack():
         self.patternSeqLength = length
 
     def editGrid(self, *msg):
-        if msg[0][2] == "clear":
+        if msg[0][2] == 'clear':
             self.clearGrid()
         else:
             yval = (msg[0][2] - 1)
@@ -184,21 +184,21 @@ class GridTrack():
 
     def editMidi(self, *msg):
         param = msg[0][2]
-        if param == "notes":
+        if param == 'notes':
             notenum = (msg[0][3] - 1)
             self.midinotes[notenum] = msg[0][4]
-        elif param == "velocity":
+        elif param == 'velocity':
             self.midiVelocity = msg[0][3]
-        elif param == "channel":
+        elif param == 'channel':
             self.midiChannel = msg[0][3]
-        elif param == "length":
+        elif param == 'length':
             self.midiLength = msg[0][3]
 
 
     # mouse input functions
 
     def mouseInput(self, type, pos):
-        if type == "down":
+        if type == 'down':
             if self.trackMode == 'grid':
                 self.inputGridScreen(pos)
             elif self.trackMode == 'options':
@@ -225,9 +225,9 @@ class GridTrack():
         elif col == 8 or col == 9:
             self.patternNumber = 8
             self.trackMode = 'options'
-            __main__.sendOSCMessage('/grid/track/get/pattern_seq',["bang"])
-            __main__.sendOSCMessage('/grid/track/get/pattern_seq_length',["bang"])
-            __main__.sendOSCMessage('/grid/track/get/all_midi_params',["bang"])
+            __main__.sendOSCMessage('/grid/track/get/pattern_seq',['bang'])
+            __main__.sendOSCMessage('/grid/track/get/pattern_seq_length',['bang'])
+            __main__.sendOSCMessage('/grid/track/get/all_midi_params',['bang'])
         elif col == 10 or col == 11:
             blah = 1
         elif col == 12 or col == 13:
@@ -246,15 +246,15 @@ class GridTrack():
             note = ((yval - 32) / 48)
             self.updateValue = note
             self.oldValue = self.midinotes[note]
-            print "midi note", note
+            print 'midi note', note
         elif 21 < col < 31 and 0 < row < 7:
             self.keypadPress(col, row)
         elif 21 < col < 26 and 10 < row < 13:
-            print "velocity"
+            print 'velocity'
             self.oldValue = self.midiVelocity
             self.updateValue = 8
         elif 26 < col < 31 and 10 < row < 13:
-            print "Length"
+            print 'Length'
             self.oldValue = self.midiLength
             self.updateValue = 9
         elif 26 < col < 31 and 7 < row < 10:
@@ -273,19 +273,19 @@ class GridTrack():
         if self.updateValue != -1:
             if 0 < row < 3:
                 if 21 < col < 24:
-                    print "1"
+                    print '1'
                     self.newValue *= 10
                     self.newValue += 1
                 if 23 < col < 26:
-                    print "2"
+                    print '2'
                     self.newValue *= 10
                     self.newValue += 2
                 if 25 < col < 28:
-                    print "3"
+                    print '3'
                     self.newValue *= 10
                     self.newValue += 3
                 if 27 < col < 31:
-                    print "enter"
+                    print 'enter'
                     if self.updateValue < 8:
                         if self.newValue > 127:
                             self.updateValue = -1
@@ -314,36 +314,36 @@ class GridTrack():
                     self.newValue = 0
             if 2 < row < 5:
                 if 21 < col < 24:
-                    print "4"
+                    print '4'
                     self.newValue *= 10
                     self.newValue += 4
                 if 23 < col < 26:
-                    print "5"
+                    print '5'
                     self.newValue *= 10
                     self.newValue += 5
                 if 25 < col < 28:
-                    print "6"
+                    print '6'
                     self.newValue *= 10
                     self.newValue += 6
                 if 27 < col < 31:
-                    print "cancel"
+                    print 'cancel'
                     self.updateValue = -1
                     self.newValue = 0
             if 4 < row < 7:
                 if 21 < col < 24:
-                    print "7"
+                    print '7'
                     self.newValue *= 10
                     self.newValue += 7
                 if 23 < col < 26:
-                    print "8"
+                    print '8'
                     self.newValue *= 10
                     self.newValue += 8
                 if 25 < col < 28:
-                    print "9"
+                    print '9'
                     self.newValue *= 10
                     self.newValue += 9
                 if 27 < col < 30:
-                    print "0"
+                    print '0'
                     self.newValue *= 10
 
 

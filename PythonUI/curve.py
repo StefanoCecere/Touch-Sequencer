@@ -10,7 +10,7 @@ class CurveTrack():
         self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.bmp','buttons')
         self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.bmp','buttons')
         self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.bmp','buttons')
-        self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.bmp','backgrounds')
+        self.optionsbg, self.optionsbgrect           = __main__.load_image('curveOptsBG.bmp','backgrounds')
         self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.bmp','buttons')
         self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.bmp','buttons')
 
@@ -23,11 +23,11 @@ class CurveTrack():
         self.newValue         = 0
         self.oldValue         = 0
         
-        self.gridpattern      = 0
-
         self.playing          = 0
         self.midiChannel      = 1
         self.patternNumber    = 0
+        
+        self.mouseDown = 0
         
         self.trackMode = 'curve'
         
@@ -118,104 +118,100 @@ class CurveTrack():
 
 
     def updateCurveLength(self, col, row):
-        self.patterngrid[row] = col
-        data = [col, (7 - row)]
-        __main__.sendOSCMessage('/grid/track/edit/pattern_seq', data)
+        self.cclengths[row] = col
+        data = [row, col]
+        __main__.sendOSCMessage('/curve/track/edit/pattern_seq', data)
 
     def mouseInput(self, type, pos):
-        if type == 'down':
-            xval = pos[0]
-            yval = (512 - pos[1])
-            xval = int(round(xval / 4))
-            yval = int(round(yval / 4))
-            self.prevPos = (xval, yval)
-        elif type == 'drag':            
-            xval = pos[0]
-            yval = (512 - pos[1])
-            xval = int(round(xval / 4))
-            yval = int(round(yval / 4))
-            
-            currentPos = (xval,yval)
-            
-            smoothPoints = bresenhams.smoothLine(currentPos, self.prevPos)
-            
-            for points in smoothPoints:
-                xval = points[0]
-                yval = points[1]
-                self.curveArray[xval] = yval
-            
-            self.prevPos = currentPos
-            
-            self.curveSurface.blit(self.mainBG, (0,0))
-            self.drawLines()
+        if self.trackMode == 'curve':
+            self.inputCurveScreen(type, pos)
+        elif self.trackMode == 'options' && type == 'down':
+            self.inputOptionsScreen(pos)
 
-    def editGrid(self, *msg):
-        if msg[0][2] == "clear":
-            self.clearGrid()
+    def inputCurveScreen(self, type, pos):
+        xval = pos[0]
+        yval = pos[1]
+        if yval < 512:
+            if type == 'down':
+                self.mouseDown = 1
+                xval = pos[0]
+                yval = (512 - pos[1])
+                xval = int(round(xval / 4))
+                yval = int(round(yval / 4))
+                self.prevPos = (xval, yval)
+            elif type == 'drag' and self.mouseDown == 1:            
+                xval = pos[0]
+                yval = (512 - pos[1])
+                xval = int(round(xval / 4))
+                yval = int(round(yval / 4))
+                
+                currentPos = (xval,yval)
+                
+                smoothPoints = bresenhams.smoothLine(currentPos, self.prevPos)
+                
+                for points in smoothPoints:
+                    xval = points[0]
+                    yval = points[1]
+                    self.curveArray[xval] = yval
+                
+                self.prevPos = currentPos
+                
+                self.curveSurface.blit(self.mainBG, (0,0))
+                self.drawLines()
+            elif type == 'up':
+                self.mouseDown = 0
         else:
-            yval = (msg[0][2] - 1)
-            xval = (msg[0][3] - 1)
-            if yval > 0 and xval > 0:
-                dval = msg[0][4]
-                self.trackgrid[xval][yval] = dval
+            self.mouseDown = 0
+            self.navButtonInterface(int(round(xval / 64)))
 
-    def clearGrid(self):
-        for col in range(16):
-            for row in range(8):
-                self.trackgrid[col][row] = 0
+    def editCurve(self, *msg):
+        if msg[0][2] == 'clear':
+            self.clearCurve()
+        else:
+            xval = (msg[0][2])
+            yval = (msg[0][3])
+            self.curveArray[xval] = yval
+
+    def clearCurve(self):
+        for curveVal in range(256):
+            self.curveArray[curveVal] = 0
 
     def editMidi(self, *msg):
         param = msg[0][2]
-        if param == "ccnumber":
+        if param == 'ccnumber':
             ccnumber = (msg[0][3] - 1)
             self.ccNumbers[ccnumber] = msg[0][4]
-        elif param == "velocity":
+        elif param == 'velocity':
             self.midiVelocity = msg[0][3]
-        elif param == "channel":
+        elif param == 'channel':
             self.midiChannel = msg[0][3]
-        elif param == "length":
+        elif param == 'length':
             self.midiLength = msg[0][3]
 
 
     # mouse input functions
 
-    def mouseInput(self, pos):
-        if self.trackMode == 'grid':
-            self.inputGridScreen(pos)
-        elif self.trackMode == 'options':
-            self.inputOptionsScreen(pos)
-
-
-    def inputGridScreen(self, pos):
-        col = int(round(pos[0] / 64))
-        row = int(round(pos[1] / 64))
-        
-        if row < 8:
-            self.updateGridButton(col, row)
-        else:
-            self.navButtonInterface(col)
-
     
     def navButtonInterface(self, col):
         if col < 8:
-            __main__.sendOSCMessage('/grid/track/get/pattern_grid', [col])
-            __main__.sendOSCMessage('/grid/track/edit/pattern_number', [col])
-            self.gridpattern = col
+            __main__.sendOSCMessage('/curve/track/get/curve', [col])
+            __main__.sendOSCMessage('/curve/track/edit/curvenumber', [col])
+            self.curvepattern = col
             self.patternNumber = col
-            self.trackMode = 'grid'
+            self.trackMode = 'curve'
         elif col == 8 or col == 9:
             self.patternNumber = 8
             self.trackMode = 'options'
-            __main__.sendOSCMessage('/grid/track/get/pattern_seq',["bang"])
-            __main__.sendOSCMessage('/grid/track/get/pattern_seq_length',["bang"])
-            __main__.sendOSCMessage('/grid/track/get/all_midi_params',["bang"])
+            __main__.sendOSCMessage('/curve/track/get/pattern_seq',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/pattern_seq_length',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/all_midi_params',['bang'])
         elif col == 10 or col == 11:
             blah = 1
         elif col == 12 or col == 13:
             blah = 1
         elif col == 14 or col == 15:
             self.patternNumber = 0
-            self.trackMode = 'grid'
+            self.trackMode = 'curve'
             __main__.mainObj.modeChange(1)
 
     def inputMidiOptions(self, pos):
@@ -227,15 +223,15 @@ class CurveTrack():
             ccnumber = ((yval - 32) / 48)
             self.updateValue = ccnumber
             self.oldValue = self.ccNumbers[ccnumber]
-            print "cc number", ccnumber
+            print 'cc number', ccnumber
         elif 21 < col < 31 and 0 < row < 7:
             self.keypadPress(col, row)
         elif 21 < col < 26 and 10 < row < 13:
-            print "velocity"
+            print 'velocity'
             self.oldValue = self.midiVelocity
             self.updateValue = 8
         elif 26 < col < 31 and 10 < row < 13:
-            print "Length"
+            print 'Length'
             self.oldValue = self.midiLength
             self.updateValue = 9
         elif 26 < col < 31 and 7 < row < 10:
@@ -243,10 +239,10 @@ class CurveTrack():
             playval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
             if playval == 0:
                 __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo] = 1
-                __main__.sendOSCMessage('/grid/track/control/play', [1])
+                __main__.sendOSCMessage('/curve/track/control/play', [1])
             if playval == 1:
                 __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo] = 0
-                __main__.sendOSCMessage('/grid/track/control/play', [0])
+                __main__.sendOSCMessage('/curve/track/control/play', [0])
         else:
             self.updateValue = -1
 
@@ -254,19 +250,19 @@ class CurveTrack():
         if self.updateValue != -1:
             if 0 < row < 3:
                 if 21 < col < 24:
-                    print "1"
+                    print '1'
                     self.newValue *= 10
                     self.newValue += 1
                 if 23 < col < 26:
-                    print "2"
+                    print '2'
                     self.newValue *= 10
                     self.newValue += 2
                 if 25 < col < 28:
-                    print "3"
+                    print '3'
                     self.newValue *= 10
                     self.newValue += 3
                 if 27 < col < 31:
-                    print "enter"
+                    print 'enter'
                     if self.updateValue < 8:
                         if self.newValue > 127:
                             self.updateValue = -1
@@ -274,7 +270,7 @@ class CurveTrack():
                         else:
                             self.ccNumbers[self.updateValue] = self.newValue
                             data = [self.updateValue + 1, self.newValue]
-                            __main__.sendOSCMessage('/grid/track/edit/ccnumber', data)
+                            __main__.sendOSCMessage('/curve/track/edit/ccnumber', data)
                     elif self.updateValue == 8:
                         if self.newValue > 127:
                             self.updateValue = -1
@@ -282,7 +278,7 @@ class CurveTrack():
                         else:
                             self.midiVelocity = self.newValue
                             data = [self.newValue]
-                            __main__.sendOSCMessage('/grid/track/edit/midi_params/velocity', data)
+                            __main__.sendOSCMessage('/curve/track/edit/midi_params/velocity', data)
                     elif self.updateValue == 9:
                         if self.newValue > 999:
                             self.updateValue = -1
@@ -290,41 +286,41 @@ class CurveTrack():
                         else:
                             self.midiLength = self.newValue
                             data = [self.newValue]
-                            __main__.sendOSCMessage('/grid/track/edit/midi_params/length', data)
+                            __main__.sendOSCMessage('/curve/track/edit/midi_params/length', data)
                     self.updateValue = -1
                     self.newValue = 0
             if 2 < row < 5:
                 if 21 < col < 24:
-                    print "4"
+                    print '4'
                     self.newValue *= 10
                     self.newValue += 4
                 if 23 < col < 26:
-                    print "5"
+                    print '5'
                     self.newValue *= 10
                     self.newValue += 5
                 if 25 < col < 28:
-                    print "6"
+                    print '6'
                     self.newValue *= 10
                     self.newValue += 6
                 if 27 < col < 31:
-                    print "cancel"
+                    print 'cancel'
                     self.updateValue = -1
                     self.newValue = 0
             if 4 < row < 7:
                 if 21 < col < 24:
-                    print "7"
+                    print '7'
                     self.newValue *= 10
                     self.newValue += 7
                 if 23 < col < 26:
-                    print "8"
+                    print '8'
                     self.newValue *= 10
                     self.newValue += 8
                 if 25 < col < 28:
-                    print "9"
+                    print '9'
                     self.newValue *= 10
                     self.newValue += 9
                 if 27 < col < 30:
-                    print "0"
+                    print '0'
                     self.newValue *= 10
 
 
@@ -348,7 +344,7 @@ class CurveTrack():
     def drawScreen(self):
         if self.trackMode == 'options':
             self.drawOptionsScreen()
-        elif self.trackMode == 'grid':
+        elif self.trackMode == 'curve':
             self.drawGridScreen()
         return self.trackSurface
 

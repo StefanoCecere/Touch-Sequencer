@@ -103,7 +103,7 @@ class MainMenu():
         return self.mainSurface
 
     def mouseInput(self, type, pos):
-        if type == "down":
+        if type == 'down':
             col = pos[0]
             row = pos[1]
             if col >= 576:
@@ -171,13 +171,14 @@ class Globject():
                 self.modeObject = self.grid
 
 
-def printStuff(*msg):
-    """deals with "print" tagged OSC addresses """
 
-    print "printing in the printStuff function ", msg
-    print "the oscaddress is ", msg[0][0]
-    print "the value is ", msg[0][2]
-    print "the value is ", msg[0][3]
+def printStuff(*msg):
+    '''deals with 'print' tagged OSC addresses '''
+
+    print 'printing in the printStuff function ', msg
+    print 'the oscaddress is ', msg[0][0]
+    print 'the value is ', msg[0][2]
+    print 'the value is ', msg[0][3]
 
 
 
@@ -196,12 +197,12 @@ def main():
     
     clock = pygame.time.Clock()
 
-    osc.bind(mainObj.grid.editGrid, "/grid/pattern_grid/edit")
+    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
 
-    osc.bind(mainObj.grid.editMidi, "/grid/midi_params")
+    osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
     
-    osc.bind(mainObj.grid.editPatternSeqLength, "/grid/pattern_seq/length")
-    osc.bind(mainObj.grid.editPatternSeq, "/grid/pattern_seq")
+    osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
+    osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
     
     loop = True
     while loop:
@@ -210,21 +211,17 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 loop = False
-            if event.type == pygame.MOUSEBUTTONDOWN :
-                mouseClick = pygame.mouse.get_pos()
-                mainObj.modeObject.mouseInput(mouseClick)
-                
             if event.type == pygame.MOUSEBUTTONUP :
                 mousePosition = pygame.mouse.get_pos()
-                globalObject.mouseInput('up',mousePosition)
+                mainObj.modeObject.mouseInput('up',mousePosition)
                 
             if event.type == pygame.MOUSEBUTTONDOWN :
                 mousePosition = pygame.mouse.get_pos()
-                globalObject.mouseInput('down',mousePosition)
+                mainObj.modeObject.mouseInput('down',mousePosition)
                 
             if event.type == pygame.MOUSEMOTION :
                 mousePosition = pygame.mouse.get_pos()
-                globalObject.mouseInput('drag',mousePosition)
+                mainObj.modeObject.mouseInput('drag',mousePosition)
         
         mainObj.drawStuff()
 
