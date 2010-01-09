@@ -14,17 +14,19 @@ class CurveTrack():
         self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.bmp','buttons')
         self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.bmp','buttons')
 
-        self.curveArray = [0 for curveVal in range(256)]
+        self.curveArray  = [0 for curveVal in range(256)]
+        
         self.ccNumbers   = [0 for numbers in range(8)]
+        self.ccChannel   = [0 for numbers in range(8)]
+        self.ccPlaying   = [0 for numbers in range(8)]
         self.ccLengths   = [1 for numbers in range(8)]
 
 
-        self.updateValue      = -1
+        self.updateValue      = 'none'
+        self.updatecc         = -1
         self.newValue         = 0
         self.oldValue         = 0
         
-        self.playing          = 0
-        self.midiChannel      = 1
         self.patternNumber    = 0
         
         self.mouseDown = 0
@@ -41,8 +43,14 @@ class CurveTrack():
     
     # display functions
     
+    def drawScreen(self):
+        if self.trackMode == 'options':
+            self.drawOptionsScreen()
+        elif self.trackMode == 'curve':
+            self.drawGridScreen()
+        return self.trackSurface
+    
     def drawCurve(self):
-        print 'curve array', self.curveArray
         pointList = []
         for data in range(256):
             dataVal = (512 - (self.curveArray[data] * 4))
@@ -68,38 +76,36 @@ class CurveTrack():
     def drawMidiOptions(self):
         self.trackSurface.blit(self.optionsbg, (512,0))
         for ccnumber in range(8):
+        
             ccval = str(self.ccNumbers[ccnumber])
             font = pygame.font.Font(None, 62)
             displaytext = font.render(ccval, 1, (255, 255, 255))
-            textpos = ((550 + 4),((ccnumber * 48) + 32 + 6))
+            textpos = ((64 + 4),((ccnumber * 48) + 224 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
-        channel = str(self.midiChannel)
-        font = pygame.font.Font(None, 96)
-        displaytext = font.render(channel, 1, (255, 255, 255))
-        textpos = (869,(354 + 2))
-        self.trackSurface.blit(displaytext, textpos)
+            channel = str(self.ccChannel[ccnumber])
+            font = pygame.font.Font(None, 96)
+            displaytext = font.render(channel, 1, (255, 255, 255))
+            textpos = ((192 + 4),((ccnumber * 48) + 224 + 6))
+            self.trackSurface.blit(displaytext, textpos)
         
+            length = str(self.ccLengths[ccnumber])
+            font = pygame.font.Font(None, 96)
+            displaytext = font.render(length, 1, (255, 255, 255))
+            textpos = ((320 + 4),((ccnumber * 48) + 224 + 6))
+            self.trackSurface.blit(displaytext, textpos)
+        
+            buttonval = self.ccPlaying[ccnumber]
+            if buttonval == 0:
+                self.trackSurface.blit(self.stopbutton, ((448 + 4),((ccnumber * 48) + 224 + 6)))
+            elif buttonval == 1:
+                self.trackSurface.blit(self.gobutton, ((448 + 4),((ccnumber * 48) + 224 + 6)))
+
         ccval = str(self.newValue)
         font = pygame.font.Font(None, 96)
         ccvaltext = font.render(ccval, 1, (255, 255, 255))
         textpos = (709,(222 + 4))
         self.trackSurface.blit(ccvaltext, textpos)
-
-    def drawCurveLengths(self):
-        for row in range(8):
-            for col in range(8):
-                if (self.ccLengths[row]) < col:
-                    self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
-                else:
-                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
-
-    def drawPlayButton(self):
-        buttonval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
-        if buttonval == 0:
-            self.trackSurface.blit(self.stopbutton, (864,256))
-        elif buttonval == 1:
-            self.trackSurface.blit(self.gobutton, (864,256))
 
     def drawCurveScreen(self):
         self.trackSurface.fill((250, 250, 250))
@@ -108,19 +114,41 @@ class CurveTrack():
 
     def drawOptionsScreen(self):
         self.trackSurface.fill((250, 250, 250))
-        self.drawCurveLengths()
         self.drawMidiOptions()
         self.drawNavButtons()
-        self.drawPlayButton()
+
+    #functions called by OSC
+
+    def editCurve(self, *msg):
+        if msg[0][2] == 'clear':
+            self.clearCurve()
+        else:
+            xval = (msg[0][2] - 1)
+            if -1 < xval < 256:
+                yval = (msg[0][3])
+                self.curveArray[xval] = yval
+
+    def clearCurve(self):
+        for curveVal in range(256):
+            self.curveArray[curveVal] = 0
+
+    def editMidi(self, *msg):
+        val    = msg[0][4]
+        numb   = msg[0][3]
+        param  = msg[0][2]
+        if param == 'ccnumber':
+            self.ccNumbers[numb - 1] = val
+        elif param == 'channel':
+            self.midiChannel[numb - 1] = val
+
+    def editLengths(self, *msg):
+        val    = msg[0][3]
+        numb   = msg[0][2]
+        self.ccLengths[numb - 1] = val
 
 
-    # functions that will be called from OSC messages
 
-
-    def updateCurveLength(self, col, row):
-        self.cclengths[row] = col
-        data = [row, col]
-        __main__.sendOSCMessage('/curve/track/edit/pattern_seq', data)
+    # mouse input functions
 
     def mouseInput(self, type, pos):
         if self.trackMode == 'curve':
@@ -163,48 +191,19 @@ class CurveTrack():
         else:
             self.mouseDown = 0
             self.navButtonInterface(int(round(xval / 64)))
-
-    def editCurve(self, *msg):
-        if msg[0][2] == 'clear':
-            self.clearCurve()
-        else:
-            xval = (msg[0][2])
-            yval = (msg[0][3])
-            self.curveArray[xval] = yval
-
-    def clearCurve(self):
-        for curveVal in range(256):
-            self.curveArray[curveVal] = 0
-
-    def editMidi(self, *msg):
-        param = msg[0][2]
-        if param == 'ccnumber':
-            ccnumber = (msg[0][3] - 1)
-            self.ccNumbers[ccnumber] = msg[0][4]
-        elif param == 'velocity':
-            self.midiVelocity = msg[0][3]
-        elif param == 'channel':
-            self.midiChannel = msg[0][3]
-        elif param == 'length':
-            self.midiLength = msg[0][3]
-
-
-    # mouse input functions
-
     
     def navButtonInterface(self, col):
         if col < 8:
-            __main__.sendOSCMessage('/curve/track/get/curve', [col])
-            __main__.sendOSCMessage('/curve/track/edit/curvenumber', [col])
+            __main__.sendOSCMessage('/curve/track/get/curve', [col + 1])
             self.curvepattern = col
             self.patternNumber = col
             self.trackMode = 'curve'
         elif col == 8 or col == 9:
             self.patternNumber = 8
             self.trackMode = 'options'
-            __main__.sendOSCMessage('/curve/track/get/pattern_seq',['bang'])
-            __main__.sendOSCMessage('/curve/track/get/pattern_seq_length',['bang'])
-            __main__.sendOSCMessage('/curve/track/get/all_midi_params',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/curve_length',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/midi_params/cc_number',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/midi_params/midi_channel',['bang'])
         elif col == 10 or col == 11:
             blah = 1
         elif col == 12 or col == 13:
@@ -217,135 +216,143 @@ class CurveTrack():
     def inputMidiOptions(self, pos):
         xval = pos[0]
         yval = pos[1]
-        col = int(round(xval / 32))
-        row = int(round(yval / 32))
-        if 16 < col < 21 and 0 < row < 13:
-            ccnumber = ((yval - 32) / 48)
-            self.updateValue = ccnumber
+        col = int(round(xval / 64))
+        row = int(round(yval / 64))
+        if 0 < col < 7:
+            ccnumber = ((yval - 64) / 48)
+            
+            if 0 < row < 3:
+            self.updatecc = ccnumber
+            self.updateValue = 'number'
             self.oldValue = self.ccNumbers[ccnumber]
             print 'cc number', ccnumber
-        elif 21 < col < 31 and 0 < row < 7:
-            self.keypadPress(col, row)
-        elif 21 < col < 26 and 10 < row < 13:
-            print 'velocity'
-            self.oldValue = self.midiVelocity
-            self.updateValue = 8
-        elif 26 < col < 31 and 10 < row < 13:
-            print 'Length'
-            self.oldValue = self.midiLength
-            self.updateValue = 9
-        elif 26 < col < 31 and 7 < row < 10:
-            self.updateValue = -1
-            playval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
-            if playval == 0:
-                __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo] = 1
-                __main__.sendOSCMessage('/curve/track/control/play', [1])
-            if playval == 1:
-                __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo] = 0
-                __main__.sendOSCMessage('/curve/track/control/play', [0])
+            
+            elif 2 < row < 5:
+            self.updatecc = ccnumber
+            self.updateValue = 'length'
+            self.oldValue = self.ccNumbers[ccnumber]
+            print 'cc length', ccnumber
+            
+            elif 4 < row < 7:
+            self.updatecc = ccnumber
+            self.updateValue = 'channel'
+            self.oldValue = self.ccNumbers[ccnumber]
+            print 'cc channel', ccnumber
+            
+            elif 6 < row < 9:
+                if self.ccPlaying[ccnumber] == 1:
+                    self.ccPlaying[ccnumber] = 0
+                    data = [ccnumber + 1, 0]
+                    __main__.sendOSCMessage('/curve/track/control/curve_play', data)
+                elif self.ccPlaying[ccnumber] == 0:
+                    self.ccPlaying[ccnumber] = 1
+                    data = [ccnumber + 1, 1]
+                    __main__.sendOSCMessage('/curve/track/control/curve_play', data)
+            print 'cc play', ccnumber
+            
+        elif 9 < col < 15 and 1 < row < 6:
+            self.keypadPress(xval - 640, yval - 128)
         else:
-            self.updateValue = -1
+            self.updateValue = 'none'
 
-    def keypadPress(self, col, row):
-        if self.updateValue != -1:
-            if 0 < row < 3:
-                if 21 < col < 24:
+    def keypadPress(self, xval, yval):
+        if self.updateValue != 'none':
+        
+            col = int(round(xval / 32))
+            row = int(round(yval / 32))
+            
+            if row == 0 or row == 1:
+            
+                if col == 0 or col == 1:
                     print '1'
                     self.newValue *= 10
                     self.newValue += 1
-                if 23 < col < 26:
+                if col == 2 or col == 3:
                     print '2'
                     self.newValue *= 10
                     self.newValue += 2
-                if 25 < col < 28:
+                if col == 4 or col == 5:
                     print '3'
                     self.newValue *= 10
                     self.newValue += 3
-                if 27 < col < 31:
+                    
+                if col == 6 or col == 7 or col == 8:
                     print 'enter'
-                    if self.updateValue < 8:
+                    
+                    if self.self.updateValue == 'number':
                         if self.newValue > 127:
-                            self.updateValue = -1
+                            self.updateValue = 'none'
                             self.newValue = 0
                         else:
-                            self.ccNumbers[self.updateValue] = self.newValue
+                            self.ccNumbers[self.updatecc] = self.newValue
                             data = [self.updateValue + 1, self.newValue]
-                            __main__.sendOSCMessage('/curve/track/edit/ccnumber', data)
-                    elif self.updateValue == 8:
-                        if self.newValue > 127:
-                            self.updateValue = -1
+                            __main__.sendOSCMessage('/curve/track/edit/midi_params/cc_number', data)
+                            
+                    elif self.updateValue == 'length':
+                        if self.newValue < 1 or self.newValue > 16:
+                            self.updateValue = 'none'
                             self.newValue = 0
                         else:
-                            self.midiVelocity = self.newValue
+                            self.ccLengths[self.updatecc] = self.newValue
                             data = [self.newValue]
-                            __main__.sendOSCMessage('/curve/track/edit/midi_params/velocity', data)
-                    elif self.updateValue == 9:
-                        if self.newValue > 999:
-                            self.updateValue = -1
+                            __main__.sendOSCMessage('/curve/track/edit/curve_length', data)
+                            
+                    elif self.updateValue == 'channel':
+                        if self.newValue > 15:
+                            self.updateValue = 'none'
                             self.newValue = 0
                         else:
-                            self.midiLength = self.newValue
+                            self.ccChannel[self.updatecc] = self.newValue
                             data = [self.newValue]
-                            __main__.sendOSCMessage('/curve/track/edit/midi_params/length', data)
-                    self.updateValue = -1
+                            __main__.sendOSCMessage('/curve/track/edit/midi_params/midi_channel', data)
+                    self.updateValue = 'none'
                     self.newValue = 0
-            if 2 < row < 5:
-                if 21 < col < 24:
+                    
+            if row == 2 or row == 3:
+            
+                if col == 0 or col == 1:
                     print '4'
                     self.newValue *= 10
                     self.newValue += 4
-                if 23 < col < 26:
+                if col == 2 or col == 3:
                     print '5'
                     self.newValue *= 10
                     self.newValue += 5
-                if 25 < col < 28:
+                if col == 4 or col == 5:
                     print '6'
                     self.newValue *= 10
                     self.newValue += 6
-                if 27 < col < 31:
+                if col == 6 or col == 7 or col == 8:
                     print 'cancel'
-                    self.updateValue = -1
+                    self.updateValue = 'none'
                     self.newValue = 0
-            if 4 < row < 7:
-                if 21 < col < 24:
+                    
+            if row == 4 or row == 5:
+            
+                if col == 0 or col == 1:
                     print '7'
                     self.newValue *= 10
                     self.newValue += 7
-                if 23 < col < 26:
+                if col == 2 or col == 3:
                     print '8'
                     self.newValue *= 10
                     self.newValue += 8
-                if 25 < col < 28:
+                if col == 4 or col == 5:
                     print '9'
                     self.newValue *= 10
                     self.newValue += 9
-                if 27 < col < 30:
+                if col == 6 or col == 7:
                     print '0'
                     self.newValue *= 10
 
 
     def inputOptionsScreen(self, pos):
-        col = pos[0]
-        row = pos[1]
-        col = int(round(col / 64))
-        row = int(round(row / 64))
+        col = int(round(pos[0] / 64))
+        row = int(round(pos[1] / 64))
         if row > 7:
             self.navButtonInterface(col)
-            self.updateValue = -1
-        elif col < 8:
-            self.updatePatternSeq(col,row)
-            self.updateValue = -1
-        elif row == 7:
-            self.updatePatternSeqLength(col)
-            self.updateValue = -1
+            self.updateValue = 'none'
         else:
             self.inputMidiOptions(pos)
-
-    def drawScreen(self):
-        if self.trackMode == 'options':
-            self.drawOptionsScreen()
-        elif self.trackMode == 'curve':
-            self.drawGridScreen()
-        return self.trackSurface
 
 

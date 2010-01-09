@@ -4,6 +4,7 @@
 import os, pygame, osc
 
 from multigrid import *
+from curve import *
 
 from pygame.locals import *
 from pygame.compat import geterror
@@ -30,16 +31,22 @@ class MainMenu():
         
         track = int(round(yval / 60))
         self.trackNo = track
-        sendOSCMessage('/grid/track_select', [track + 1])
-        if 444 < xval < 544:
-            if self.playingTracks[track] == 0:
-                self.playingTracks[track] = 1
+        if track < 7:
+            sendOSCMessage('/grid/track_select', [track + 1])
+            if 444 < xval < 544:
+                if self.playingTracks[track] == 0:
+                    self.playingTracks[track] = 1
+                else:
+                    self.playingTracks[track] = 0
+                sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
             else:
-                self.playingTracks[track] = 0
-            sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
-        else:
-            sendOSCMessage('/grid/track/get/pattern_grid', [0])
-            mainObj.modeChange(2)
+                sendOSCMessage('/grid/track/get/pattern_grid', [0])
+                mainObj.modeChange(2)
+        elif 6 < track < 10:
+            sendOSCMessage('/curve/track_select', [track + 1])
+            sendOSCMessage('/curve/track/get/curve', [0])
+            mainObj.modeChange(3)
+
 
     def changeBpm(self, value):
         bpm = self.bpm + value
@@ -152,8 +159,9 @@ class Globject():
         
         self.mode = 1
         
-        self.grid = GridTrack()
-        self.menu = MainMenu()
+        self.grid       = CurveTrack()
+        self.curve      = GridTrack()
+        self.menu       = MainMenu()
         self.modeObject = self.menu
 
     def drawStuff(self):
@@ -169,6 +177,8 @@ class Globject():
                 self.modeObject = self.menu
             elif mode == 2:
                 self.modeObject = self.grid
+            elif mode == 3:
+                self.modeObject = self.curve
 
 
 
