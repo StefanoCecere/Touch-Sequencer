@@ -11,9 +11,9 @@ from pygame.compat import geterror
     
 class MainMenu():
     def __init__(self):
-        self.mainBG, self.mainBGrect = load_image('mainMenu.bmp','backgrounds')
-        self.gobutton, self.gobuttonrect = load_image('gobutton.bmp','buttons')
-        self.stopbutton, self.stopbuttonrect = load_image('stopbutton.bmp','buttons')
+        self.mainBG, self.mainBGrect = load_image('mainMenu.png','backgrounds')
+        self.gobutton, self.gobuttonrect = load_image('gobutton.png','buttons')
+        self.stopbutton, self.stopbuttonrect = load_image('stopbutton.png','buttons')
         
         self.playingTracks = [0 for notes in range(10)]
         self.bpm = 140
@@ -31,6 +31,7 @@ class MainMenu():
         
         track = int(round(yval / 60))
         self.trackNo = track
+        print track
         if track < 7:
             sendOSCMessage('/grid/track_select', [track + 1])
             if 444 < xval < 544:
@@ -159,8 +160,8 @@ class Globject():
         
         self.mode = 1
         
-        self.grid       = CurveTrack()
-        self.curve      = GridTrack()
+        self.curve       = CurveTrack()
+        self.grid      = GridTrack()
         self.menu       = MainMenu()
         self.modeObject = self.menu
 
@@ -175,10 +176,13 @@ class Globject():
             self.mode = mode
             if mode == 1:
                 self.modeObject = self.menu
+                print 'menu'
             elif mode == 2:
                 self.modeObject = self.grid
+                print 'grid'
             elif mode == 3:
                 self.modeObject = self.curve
+                print 'curve'
 
 
 
@@ -207,12 +211,12 @@ def main():
     
     clock = pygame.time.Clock()
 
-    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
+ #   osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
 
-    osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
+ #   osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
     
-    osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
-    osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
+ #   osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
+ #   osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
     
     loop = True
     while loop:

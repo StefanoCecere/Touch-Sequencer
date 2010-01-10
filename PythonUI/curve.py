@@ -4,15 +4,16 @@ import os, pygame, __main__, bresenhams
 class CurveTrack():
 
     def __init__(self):
-        self.button1, self.button1rect               = __main__.load_image('button1.bmp','buttons')
-        self.button2, self.button1rect               = __main__.load_image('button2.bmp','buttons')
-        self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.bmp','buttons')
-        self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.bmp','buttons')
-        self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.bmp','buttons')
-        self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.bmp','buttons')
-        self.optionsbg, self.optionsbgrect           = __main__.load_image('curveOptsBG.bmp','backgrounds')
-        self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.bmp','buttons')
-        self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.bmp','buttons')
+        self.curvebg, self.curvebgrect               = __main__.load_image('curvebg.png','backgrounds')
+        self.button1, self.button1rect               = __main__.load_image('button1.png','buttons')
+        self.button2, self.button1rect               = __main__.load_image('button2.png','buttons')
+        self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.png','buttons')
+        self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.png','buttons')
+        self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.png','buttons')
+        self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.png','buttons')
+        self.optionsbg, self.optionsbgrect           = __main__.load_image('curveOptsBG.png','backgrounds')
+        self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.png','buttons')
+        self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.png','buttons')
 
         self.curveArray  = [0 for curveVal in range(256)]
         
@@ -47,7 +48,7 @@ class CurveTrack():
         if self.trackMode == 'options':
             self.drawOptionsScreen()
         elif self.trackMode == 'curve':
-            self.drawGridScreen()
+            self.drawCurveScreen()
         return self.trackSurface
     
     def drawCurve(self):
@@ -58,7 +59,7 @@ class CurveTrack():
             pointList.append(point)
             
         if len(pointList) > 1:
-            pygame.draw.lines(self.curveSurface, self.black, False, pointList)
+            pygame.draw.lines(self.trackSurface, self.black, False, pointList)
 
     def drawNavButtons(self):
         for col in range(12):
@@ -74,32 +75,32 @@ class CurveTrack():
                     self.trackSurface.blit(self.navButtonWide2, ((((col - 8) * 128) + 512),512))
 
     def drawMidiOptions(self):
-        self.trackSurface.blit(self.optionsbg, (512,0))
+        self.trackSurface.blit(self.optionsbg, (0,0))
         for ccnumber in range(8):
         
             ccval = str(self.ccNumbers[ccnumber])
             font = pygame.font.Font(None, 62)
             displaytext = font.render(ccval, 1, (255, 255, 255))
-            textpos = ((64 + 4),((ccnumber * 48) + 224 + 6))
+            textpos = ((64 + 4),((ccnumber * 48) + 64 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
             channel = str(self.ccChannel[ccnumber])
-            font = pygame.font.Font(None, 96)
+            font = pygame.font.Font(None, 62)
             displaytext = font.render(channel, 1, (255, 255, 255))
-            textpos = ((192 + 4),((ccnumber * 48) + 224 + 6))
+            textpos = ((192 + 4),((ccnumber * 48) + 64 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
             length = str(self.ccLengths[ccnumber])
-            font = pygame.font.Font(None, 96)
+            font = pygame.font.Font(None, 62)
             displaytext = font.render(length, 1, (255, 255, 255))
-            textpos = ((320 + 4),((ccnumber * 48) + 224 + 6))
+            textpos = ((320 + 4),((ccnumber * 48) + 64 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
             buttonval = self.ccPlaying[ccnumber]
             if buttonval == 0:
-                self.trackSurface.blit(self.stopbutton, ((448 + 4),((ccnumber * 48) + 224 + 6)))
+                self.trackSurface.blit(self.stopbutton, ((448 + 4),((ccnumber * 48) + 64)))
             elif buttonval == 1:
-                self.trackSurface.blit(self.gobutton, ((448 + 4),((ccnumber * 48) + 224 + 6)))
+                self.trackSurface.blit(self.gobutton, ((448 + 4),((ccnumber * 48) + 64)))
 
         ccval = str(self.newValue)
         font = pygame.font.Font(None, 96)
@@ -153,7 +154,7 @@ class CurveTrack():
     def mouseInput(self, type, pos):
         if self.trackMode == 'curve':
             self.inputCurveScreen(type, pos)
-        elif self.trackMode == 'options' && type == 'down':
+        elif self.trackMode == 'options' and type == 'down':
             self.inputOptionsScreen(pos)
 
     def inputCurveScreen(self, type, pos):
@@ -184,14 +185,26 @@ class CurveTrack():
                 
                 self.prevPos = currentPos
                 
-                self.curveSurface.blit(self.mainBG, (0,0))
+                self.trackSurface.blit(self.curvebg, (0,0))
                 self.drawLines()
             elif type == 'up':
                 self.mouseDown = 0
         else:
-            self.mouseDown = 0
-            self.navButtonInterface(int(round(xval / 64)))
-    
+            if type == 'down':
+                self.mouseDown = 0
+                self.navButtonInterface(int(round(xval / 64)))
+
+    def drawLines(self):
+        print 'curve array', self.curveArray
+        pointList = []
+        for data in range(256):
+            dataVal = (512 - (self.curveArray[data] * 4))
+            point = (data * 4), dataVal
+            pointList.append(point)
+            
+        if len(pointList) > 1:
+            pygame.draw.lines(self.trackSurface, self.black, False, pointList)
+
     def navButtonInterface(self, col):
         if col < 8:
             __main__.sendOSCMessage('/curve/track/get/curve', [col + 1])
@@ -222,22 +235,22 @@ class CurveTrack():
             ccnumber = ((yval - 64) / 48)
             
             if 0 < row < 3:
-            self.updatecc = ccnumber
-            self.updateValue = 'number'
-            self.oldValue = self.ccNumbers[ccnumber]
-            print 'cc number', ccnumber
+                self.updatecc = ccnumber
+                self.updateValue = 'number'
+                self.oldValue = self.ccNumbers[ccnumber]
+                print 'cc number', ccnumber
             
             elif 2 < row < 5:
-            self.updatecc = ccnumber
-            self.updateValue = 'length'
-            self.oldValue = self.ccNumbers[ccnumber]
-            print 'cc length', ccnumber
+                self.updatecc = ccnumber
+                self.updateValue = 'length'
+                self.oldValue = self.ccNumbers[ccnumber]
+                print 'cc length', ccnumber
             
             elif 4 < row < 7:
-            self.updatecc = ccnumber
-            self.updateValue = 'channel'
-            self.oldValue = self.ccNumbers[ccnumber]
-            print 'cc channel', ccnumber
+                self.updatecc = ccnumber
+                self.updateValue = 'channel'
+                self.oldValue = self.ccNumbers[ccnumber]
+                print 'cc channel', ccnumber
             
             elif 6 < row < 9:
                 if self.ccPlaying[ccnumber] == 1:

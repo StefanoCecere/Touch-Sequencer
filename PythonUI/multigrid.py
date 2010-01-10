@@ -4,15 +4,15 @@ import os, pygame, __main__
 class GridTrack():
 
     def __init__(self):
-        self.button1, self.button1rect               = __main__.load_image('button1.bmp','buttons')
-        self.button2, self.button1rect               = __main__.load_image('button2.bmp','buttons')
-        self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.bmp','buttons')
-        self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.bmp','buttons')
-        self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.bmp','buttons')
-        self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.bmp','buttons')
-        self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.bmp','backgrounds')
-        self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.bmp','buttons')
-        self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.bmp','buttons')
+        self.button1, self.button1rect               = __main__.load_image('button1.png','buttons')
+        self.button2, self.button1rect               = __main__.load_image('button2.png','buttons')
+        self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.png','buttons')
+        self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.png','buttons')
+        self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.png','buttons')
+        self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.png','buttons')
+        self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.png','backgrounds')
+        self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.png','buttons')
+        self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.png','buttons')
         
         self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
         self.patterngrid = [0 for col in range(8)]
@@ -31,13 +31,28 @@ class GridTrack():
         self.patternSeqLength = 1
         self.patternNumber    = 0
         
-        self.trackMode = 'grid'
+        self.mode             = 'grid'
         
         self.trackSurface = pygame.Surface((1024,600))
         self.trackSurface = self.trackSurface.convert()
         self.trackSurface.fill((250, 250, 250))
 
-    
+    # functions callable from outside the object
+
+    def mouseInput(self, type, pos):
+        if type == 'down':
+            if self.mode == 'grid':
+                self.inputGridScreen(pos)
+            elif self.mode == 'options':
+                self.inputOptionsScreen(pos)
+
+    def drawScreen(self):
+        if self.mode == 'options':
+            self.drawOptionsScreen()
+        elif self.mode == 'grid':
+            self.drawGridScreen()
+        return self.trackSurface
+  
     # display functions
     
     def drawGrid(self):
@@ -197,14 +212,6 @@ class GridTrack():
 
     # mouse input functions
 
-    def mouseInput(self, type, pos):
-        if type == 'down':
-            if self.trackMode == 'grid':
-                self.inputGridScreen(pos)
-            elif self.trackMode == 'options':
-                self.inputOptionsScreen(pos)
-
-
     def inputGridScreen(self, pos):
         col = int(round(pos[0] / 64))
         row = int(round(pos[1] / 64))
@@ -221,10 +228,10 @@ class GridTrack():
             __main__.sendOSCMessage('/grid/track/edit/pattern_number', [col])
             self.gridpattern = col
             self.patternNumber = col
-            self.trackMode = 'grid'
+            self.mode = 'grid'
         elif col == 8 or col == 9:
             self.patternNumber = 8
-            self.trackMode = 'options'
+            self.mode = 'options'
             __main__.sendOSCMessage('/grid/track/get/pattern_seq',['bang'])
             __main__.sendOSCMessage('/grid/track/get/pattern_seq_length',['bang'])
             __main__.sendOSCMessage('/grid/track/get/all_midi_params',['bang'])
@@ -234,7 +241,7 @@ class GridTrack():
             blah = 1
         elif col == 14 or col == 15:
             self.patternNumber = 0
-            self.trackMode = 'grid'
+            self.mode = 'grid'
             __main__.mainObj.modeChange(1)
 
     def inputMidiOptions(self, pos):
@@ -364,11 +371,6 @@ class GridTrack():
         else:
             self.inputMidiOptions(pos)
 
-    def drawScreen(self):
-        if self.trackMode == 'options':
-            self.drawOptionsScreen()
-        elif self.trackMode == 'grid':
-            self.drawGridScreen()
-        return self.trackSurface
+
 
 
