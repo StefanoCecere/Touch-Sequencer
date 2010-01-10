@@ -109,7 +109,7 @@ class CurveTrack():
         self.trackSurface.blit(ccvaltext, textpos)
 
     def drawCurveScreen(self):
-        self.trackSurface.fill((250, 250, 250))
+        self.trackSurface.blit(self.curvebg, (0,0))
         self.drawCurve()
         self.drawNavButtons()
 
@@ -118,7 +118,19 @@ class CurveTrack():
         self.drawMidiOptions()
         self.drawNavButtons()
 
-    #functions called by OSC
+    #functions for OSC communication
+
+    def sendCurveData(self):
+        temparray = [0 for curveVal in range(259)]
+        temparray[0] = self.curveArray[0]
+        for curveVal in range(256):
+            temparray[curveVal + 1] = self.curveArray[curveVal]
+        temparray[257] = self.curveArray[255]
+        temparray[258] = self.curveArray[255]
+        datastring = map(str, temparray)
+        data = [' '.join(datastring)]
+        print data
+        __main__.sendOSCMessage('/curve/track/control/curve_play', data)
 
     def editCurve(self, *msg):
         if msg[0][2] == 'clear':
@@ -185,13 +197,16 @@ class CurveTrack():
                 
                 self.prevPos = currentPos
                 
-                self.trackSurface.blit(self.curvebg, (0,0))
                 self.drawLines()
             elif type == 'up':
-                self.mouseDown = 0
+                if self.mouseDown == 1:
+                    self.mouseDown = 0
+                    self.sendCurveData()
         else:
-            if type == 'down':
+            if self.mouseDown == 1:
                 self.mouseDown = 0
+                self.sendCurveData()
+            if type == 'down':
                 self.navButtonInterface(int(round(xval / 64)))
 
     def drawLines(self):
@@ -367,5 +382,4 @@ class CurveTrack():
             self.updateValue = 'none'
         else:
             self.inputMidiOptions(pos)
-
 

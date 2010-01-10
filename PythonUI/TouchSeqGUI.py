@@ -10,6 +10,7 @@ from pygame.locals import *
 from pygame.compat import geterror
     
 class MainMenu():
+
     def __init__(self):
         self.mainBG, self.mainBGrect = load_image('mainMenu.png','backgrounds')
         self.gobutton, self.gobuttonrect = load_image('gobutton.png','buttons')
@@ -148,7 +149,7 @@ def sendOSCMessage(address, value):
     print address, value
 
 #    osc.sendMsg(address, value, '192.168.2.3', 9002)
-    osc.sendMsg(address, value, '127.0.0.1', 9002)
+    osc.sendMsg(address, value, '127.0.0.1', 9004)
 
 
 class Globject():

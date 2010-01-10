@@ -183,6 +183,7 @@
 #X msg 551 171 259;
 #X obj 551 139 t b b f b;
 #X msg 641 331 clear;
+#X obj 242 112 print curve;
 #X connect 0 0 1 0;
 #X connect 0 0 3 0;
 #X connect 1 0 0 1;
@@ -232,7 +233,7 @@
 #X connect 38 0 28 0;
 #X connect 39 0 29 0;
 #X connect 39 0 31 0;
-#X connect 39 0 27 0;
+#X connect 39 0 51 0;
 #X connect 40 0 32 0;
 #X connect 40 0 30 0;
 #X connect 40 0 41 0;

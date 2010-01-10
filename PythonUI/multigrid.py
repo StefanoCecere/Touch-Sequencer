@@ -139,7 +139,6 @@ class GridTrack():
 
 
     def drawGridScreen(self):
-        self.trackSurface.fill((250, 250, 250))
         self.drawGrid()
         self.drawNavButtons()
 
