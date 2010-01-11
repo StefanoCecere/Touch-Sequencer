@@ -187,7 +187,7 @@ class GridTrack():
         else:
             yval = (msg[0][2] - 1)
             xval = (msg[0][3] - 1)
-            if yval > 0 and xval > 0:
+            if yval >= 0 and xval >= 0:
                 dval = msg[0][4]
                 self.trackgrid[xval][yval] = dval
 
