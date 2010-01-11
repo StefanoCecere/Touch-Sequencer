@@ -46,7 +46,8 @@ class MainMenu():
                 mainObj.modeChange(2)
         elif 6 < track < 10:
             sendOSCMessage('/curve/track_select', [track + 1])
-            sendOSCMessage('/curve/track/get/curve', [0])
+            sendOSCMessage('/curve/track/get/curve', [1])
+            sendOSCMessage('/curve/track/edit/curve_number', [1])
             mainObj.modeChange(3)
 
 
@@ -193,7 +194,6 @@ def printStuff(*msg):
     print 'printing in the printStuff function ', msg
     print 'the oscaddress is ', msg[0][0]
     print 'the value is ', msg[0][2]
-    print 'the value is ', msg[0][3]
 
 
 
@@ -212,12 +212,14 @@ def main():
     
     clock = pygame.time.Clock()
 
- #   osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
+    osc.bind(mainObj.curve.editCurve, '/curve/gui_curve/edit') 
+ 
+    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
 
- #   osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
+    osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
     
- #   osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
- #   osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
+    osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
+    osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
     
     loop = True
     while loop:

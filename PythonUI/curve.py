@@ -130,16 +130,16 @@ class CurveTrack():
         datastring = map(str, temparray)
         data = [' '.join(datastring)]
         print data
-        __main__.sendOSCMessage('/curve/track/control/curve_play', data)
+        __main__.sendOSCMessage('/curve/track/edit/curve', data)
 
     def editCurve(self, *msg):
-        if msg[0][2] == 'clear':
-            self.clearCurve()
-        else:
-            xval = (msg[0][2] - 1)
-            if -1 < xval < 256:
-                yval = (msg[0][3])
-                self.curveArray[xval] = yval
+        info = msg[0][2].split()
+        temparray = map(int, info)
+        del temparray [0]
+        del temparray[-1]
+        del temparray[-1]
+        self.curveArray = temparray
+
 
     def clearCurve(self):
         for curveVal in range(256):
@@ -223,6 +223,7 @@ class CurveTrack():
     def navButtonInterface(self, col):
         if col < 8:
             __main__.sendOSCMessage('/curve/track/get/curve', [col + 1])
+            __main__.sendOSCMessage('/curve/track/edit/curve_number', [col + 1])
             self.curvepattern = col
             self.patternNumber = col
             self.trackMode = 'curve'

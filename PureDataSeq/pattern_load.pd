@@ -33,7 +33,8 @@
 #X msg 287 338 6 \$1 \$2;
 #X msg 341 338 7 \$1 \$2;
 #X msg 395 338 8 \$1 \$2;
-#X obj 227 65 t b b f b b f;
+#X obj 227 65 t b b f b b;
+#X msg 503 164 clear;
 #X connect 0 0 3 0;
 #X connect 1 0 2 1;
 #X connect 1 1 24 0;
@@ -88,3 +89,5 @@
 #X connect 34 1 1 0;
 #X connect 34 2 4 0;
 #X connect 34 3 21 0;
+#X connect 34 4 35 0;
+#X connect 35 0 22 0;
