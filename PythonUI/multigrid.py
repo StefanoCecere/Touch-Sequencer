@@ -157,9 +157,6 @@ class GridTrack():
         self.trackgrid[col][row] = buttonval
 
     def updateGridButton(self, col, row):
-        self.trackgrid[col][row] = self.trackgrid[col][row] + 1
-        if self.trackgrid[col][row] > 1:
-            self.trackgrid[col][row] = 0
         data = [row + 1, col + 1, self.trackgrid[col][row]]
         __main__.sendOSCMessage('/grid/track/edit/pattern_grid', data)
 

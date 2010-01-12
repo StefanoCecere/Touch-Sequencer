@@ -1,4 +1,4 @@
-#N canvas 637 128 560 429 10;
+#N canvas 558 112 560 429 10;
 #X floatatom 189 158 5 0 0 0 - - -;
 #X floatatom 246 158 5 1 8 0 - - -;
 #X obj 274 235 until;
@@ -7,10 +7,10 @@
 #X obj 255 319 pointer;
 #X msg 274 263 next;
 #X floatatom 290 147 5 1 8 0 - - -;
-#X obj 189 79 unpack 0 0;
+#X obj 189 23 unpack 0 0;
 #X obj 246 131 t f b;
-#X obj 290 50 inlet;
-#X obj 189 54 inlet;
+#X obj 289 115 inlet;
+#X obj 189 -1 inlet;
 #X obj 255 183 + 1;
 #X obj 289 169 * 16;
 #X obj 323 229 f \$1;
@@ -18,10 +18,13 @@
 #X obj 313 320 print track\$1_pointererror;
 #X obj 189 128 i;
 #X obj 189 352 set mv_track \$2;
-#X obj 189 105 t b b f;
-#X obj 95 199 pack 0 0 0;
-#X obj 95 162 i \$3;
-#X obj 95 235 outlet;
+#X obj 189 46 t b b f;
+#X obj 92 149 pack 0 0 0;
+#X obj 92 112 i \$3;
+#X obj 92 183 outlet;
+#X obj 246 47 sel 1 0;
+#X msg 246 68 0;
+#X msg 273 68 1;
 #X connect 0 0 18 0;
 #X connect 1 0 12 0;
 #X connect 2 0 6 0;
@@ -34,8 +37,7 @@
 #X connect 6 0 4 0;
 #X connect 7 0 13 0;
 #X connect 8 0 19 0;
-#X connect 8 1 17 1;
-#X connect 8 1 20 2;
+#X connect 8 1 23 0;
 #X connect 9 0 1 0;
 #X connect 9 1 7 0;
 #X connect 10 0 7 0;
@@ -51,3 +53,9 @@
 #X connect 19 2 20 1;
 #X connect 20 0 22 0;
 #X connect 21 0 20 0;
+#X connect 23 0 24 0;
+#X connect 23 1 25 0;
+#X connect 24 0 17 1;
+#X connect 24 0 20 2;
+#X connect 25 0 17 1;
+#X connect 25 0 20 2;

@@ -3,7 +3,7 @@
 #X obj 625 -308 mono_row_workings \$1;
 #X obj 26 -532 loadbang;
 #X obj 795 -280 unpack;
-#N canvas 490 179 627 375 seq_mover 1;
+#N canvas 490 179 627 375 seq_mover 0;
 #X obj 67 57 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X obj 58 128 spigot;
@@ -114,7 +114,7 @@
 #X obj 29 -307 mono_pattern_read \$1;
 #X obj 63 -410 OSCroute /control/play;
 #X obj 388 -328 OSCroute /get;
-#X obj 729 -489 OSCroute /edit;
+#X obj 479 -406 OSCroute /edit;
 #X obj 98 -380 OSCroute /edit/pattern_seq_length;
 #N canvas 152 76 821 529 midi-notes 0;
 #X obj 263 87 route 1 2 3 4 5 6 7 8;
@@ -289,8 +289,8 @@
 #X restore 29 -259 pd midi-notes \$1;
 #N canvas 0 0 788 370 mono_track\$1_window 0;
 #X scalar mono_track 0 \;;
-#X scalar mono_track 0 \;;
-#X scalar mono_track 0 \;;
+#X scalar mono_track 7 \;;
+#X scalar mono_track 5 \;;
 #X scalar mono_track 0 \;;
 #X scalar mono_track 0 \;;
 #X scalar mono_track 0 \;;
@@ -424,6 +424,7 @@
 #X obj 428 -530 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
 #X connect 0 0 26 0;
+#X connect 0 1 26 0;
 #X connect 1 0 5 0;
 #X connect 2 0 31 0;
 #X connect 2 1 32 1;
