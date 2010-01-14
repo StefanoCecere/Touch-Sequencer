@@ -28,6 +28,10 @@ class GridTrack():
         self.midiLength       = 1
         self.midiVelocity     = 1
         self.midiChannel      = 1
+        
+        self.swingType        = '8th'
+        self.swingAmount      = 100
+        
         self.patternSeqLength = 1
         self.patternNumber    = 0
         
@@ -249,15 +253,12 @@ class GridTrack():
             note = ((yval - 32) / 48)
             self.updateValue = note
             self.oldValue = self.midinotes[note]
-            print 'midi note', note
-        elif 21 < col < 31 and 0 < row < 7:
-            self.keypadPress(col, row)
+        elif 26 < col < 31 and 0 < row < 5:
+            self.keypadPress(xval - 864, yval - 32)
         elif 21 < col < 26 and 10 < row < 13:
-            print 'velocity'
             self.oldValue = self.midiVelocity
             self.updateValue = 8
         elif 26 < col < 31 and 10 < row < 13:
-            print 'Length'
             self.oldValue = self.midiLength
             self.updateValue = 9
         elif 26 < col < 31 and 7 < row < 10:
@@ -272,23 +273,21 @@ class GridTrack():
         else:
             self.updateValue = -1
 
-    def keypadPress(self, col, row):
+    def keypadPress(self, xval, yval):
         if self.updateValue != -1:
-            if 0 < row < 3:
-                if 21 < col < 24:
-                    print '1'
+            col = int(round(xval / 32))
+            row = int(round(yval / 32))
+            if row == 0:
+                if col == 0:
                     self.newValue *= 10
                     self.newValue += 1
-                if 23 < col < 26:
-                    print '2'
+                if col == 1:
                     self.newValue *= 10
                     self.newValue += 2
-                if 25 < col < 28:
-                    print '3'
+                if col == 2:
                     self.newValue *= 10
                     self.newValue += 3
-                if 27 < col < 31:
-                    print 'enter'
+                if col == 3:
                     if self.updateValue < 8:
                         if self.newValue > 127:
                             self.updateValue = -1
@@ -315,38 +314,30 @@ class GridTrack():
                             __main__.sendOSCMessage('/grid/track/edit/midi_params/length', data)
                     self.updateValue = -1
                     self.newValue = 0
-            if 2 < row < 5:
-                if 21 < col < 24:
-                    print '4'
+            if row == 1:
+                if col == 0:
                     self.newValue *= 10
                     self.newValue += 4
-                if 23 < col < 26:
-                    print '5'
+                if col == 1:
                     self.newValue *= 10
                     self.newValue += 5
-                if 25 < col < 28:
-                    print '6'
+                if col == 2:
                     self.newValue *= 10
                     self.newValue += 6
-                if 27 < col < 31:
-                    print 'cancel'
+                if col == 3:
                     self.updateValue = -1
                     self.newValue = 0
-            if 4 < row < 7:
-                if 21 < col < 24:
-                    print '7'
+            if row == 2:
+                if col == 0:
                     self.newValue *= 10
                     self.newValue += 7
-                if 23 < col < 26:
-                    print '8'
+                if col == 1:
                     self.newValue *= 10
                     self.newValue += 8
-                if 25 < col < 28:
-                    print '9'
+                if col == 2:
                     self.newValue *= 10
                     self.newValue += 9
-                if 27 < col < 30:
-                    print '0'
+                if col == 3:
                     self.newValue *= 10
 
 

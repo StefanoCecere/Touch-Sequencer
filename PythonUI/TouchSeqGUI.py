@@ -32,7 +32,6 @@ class MainMenu():
         
         track = int(round(yval / 60))
         self.trackNo = track
-        print track
         if track < 7:
             sendOSCMessage('/grid/track_select', [track + 1])
             if 444 < xval < 544:
@@ -147,7 +146,7 @@ def load_image(name, subdir, colorkey=None):
 
 def sendOSCMessage(address, value):
 
-    print address, value
+#    print address, value
 
 #    osc.sendMsg(address, value, '192.168.2.3', 9002)
     osc.sendMsg(address, value, '127.0.0.1', 9004)
@@ -178,13 +177,10 @@ class Globject():
             self.mode = mode
             if mode == 1:
                 self.modeObject = self.menu
-                print 'menu'
             elif mode == 2:
                 self.modeObject = self.grid
-                print 'grid'
             elif mode == 3:
                 self.modeObject = self.curve
-                print 'curve'
 
 
 
@@ -213,11 +209,12 @@ def main():
     clock = pygame.time.Clock()
 
     osc.bind(mainObj.curve.editCurve, '/curve/gui_curve/edit') 
- 
-    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
+    osc.bind(mainObj.curve.editMidi, '/curve/midi_params')
+    osc.bind(mainObj.curve.editLengths, '/curve/curve_lengths')
+    osc.bind(mainObj.curve.editPlayStates, '/curve/play_states')
 
+    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
     osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
-    
     osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
     osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
     

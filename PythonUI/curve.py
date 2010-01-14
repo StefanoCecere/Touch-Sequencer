@@ -87,13 +87,13 @@ class CurveTrack():
             channel = str(self.ccChannel[ccnumber])
             font = pygame.font.Font(None, 62)
             displaytext = font.render(channel, 1, (255, 255, 255))
-            textpos = ((192 + 4),((ccnumber * 48) + 64 + 6))
+            textpos = ((320 + 4),((ccnumber * 48) + 64 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
             length = str(self.ccLengths[ccnumber])
             font = pygame.font.Font(None, 62)
             displaytext = font.render(length, 1, (255, 255, 255))
-            textpos = ((320 + 4),((ccnumber * 48) + 64 + 6))
+            textpos = ((192 + 4),((ccnumber * 48) + 64 + 6))
             self.trackSurface.blit(displaytext, textpos)
         
             buttonval = self.ccPlaying[ccnumber]
@@ -105,7 +105,7 @@ class CurveTrack():
         ccval = str(self.newValue)
         font = pygame.font.Font(None, 96)
         ccvaltext = font.render(ccval, 1, (255, 255, 255))
-        textpos = (709,(222 + 4))
+        textpos = (640,(320 + 4))
         self.trackSurface.blit(ccvaltext, textpos)
 
     def drawCurveScreen(self):
@@ -129,7 +129,6 @@ class CurveTrack():
         temparray[258] = self.curveArray[255]
         datastring = map(str, temparray)
         data = [' '.join(datastring)]
-        print data
         __main__.sendOSCMessage('/curve/track/edit/curve', data)
 
     def editCurve(self, *msg):
@@ -149,15 +148,21 @@ class CurveTrack():
         val    = msg[0][4]
         numb   = msg[0][3]
         param  = msg[0][2]
-        if param == 'ccnumber':
+        
+        if param == 'cc_number':
             self.ccNumbers[numb - 1] = val
         elif param == 'channel':
-            self.midiChannel[numb - 1] = val
+            self.ccChannel[numb - 1] = val
 
     def editLengths(self, *msg):
         val    = msg[0][3]
         numb   = msg[0][2]
         self.ccLengths[numb - 1] = val
+
+    def editPlayStates(self, *msg):
+        val    = msg[0][3]
+        numb   = msg[0][2]
+        self.ccPlaying[numb - 1] = val
 
 
 
@@ -210,7 +215,6 @@ class CurveTrack():
                 self.navButtonInterface(int(round(xval / 64)))
 
     def drawLines(self):
-        print 'curve array', self.curveArray
         pointList = []
         for data in range(256):
             dataVal = (512 - (self.curveArray[data] * 4))
@@ -230,7 +234,8 @@ class CurveTrack():
         elif col == 8 or col == 9:
             self.patternNumber = 8
             self.trackMode = 'options'
-            __main__.sendOSCMessage('/curve/track/get/curve_length',['bang'])
+            __main__.sendOSCMessage('/curve/track/get/curve_length',[0])
+            __main__.sendOSCMessage('/curve/track/get/play_states',['bang'])
             __main__.sendOSCMessage('/curve/track/get/midi_params/cc_number',['bang'])
             __main__.sendOSCMessage('/curve/track/get/midi_params/midi_channel',['bang'])
         elif col == 10 or col == 11:
@@ -247,28 +252,24 @@ class CurveTrack():
         yval = pos[1]
         col = int(round(xval / 64))
         row = int(round(yval / 64))
-        if 0 < col < 7:
+        if 0 < row < 7 and 0 < col < 9:
             ccnumber = ((yval - 64) / 48)
-            
-            if 0 < row < 3:
+            if 0 < col < 3:
                 self.updatecc = ccnumber
                 self.updateValue = 'number'
                 self.oldValue = self.ccNumbers[ccnumber]
-                print 'cc number', ccnumber
             
-            elif 2 < row < 5:
+            elif 2 < col < 5:
                 self.updatecc = ccnumber
                 self.updateValue = 'length'
                 self.oldValue = self.ccNumbers[ccnumber]
-                print 'cc length', ccnumber
             
-            elif 4 < row < 7:
+            elif 4 < col < 7:
                 self.updatecc = ccnumber
                 self.updateValue = 'channel'
                 self.oldValue = self.ccNumbers[ccnumber]
-                print 'cc channel', ccnumber
             
-            elif 6 < row < 9:
+            elif 6 < col < 9:
                 if self.ccPlaying[ccnumber] == 1:
                     self.ccPlaying[ccnumber] = 0
                     data = [ccnumber + 1, 0]
@@ -277,7 +278,6 @@ class CurveTrack():
                     self.ccPlaying[ccnumber] = 1
                     data = [ccnumber + 1, 1]
                     __main__.sendOSCMessage('/curve/track/control/curve_play', data)
-            print 'cc play', ccnumber
             
         elif 9 < col < 15 and 1 < row < 6:
             self.keypadPress(xval - 640, yval - 128)
@@ -293,28 +293,24 @@ class CurveTrack():
             if row == 0 or row == 1:
             
                 if col == 0 or col == 1:
-                    print '1'
                     self.newValue *= 10
                     self.newValue += 1
                 if col == 2 or col == 3:
-                    print '2'
                     self.newValue *= 10
                     self.newValue += 2
                 if col == 4 or col == 5:
-                    print '3'
                     self.newValue *= 10
                     self.newValue += 3
                     
                 if col == 6 or col == 7 or col == 8:
-                    print 'enter'
                     
-                    if self.self.updateValue == 'number':
+                    if self.updateValue == 'number':
                         if self.newValue > 127:
                             self.updateValue = 'none'
                             self.newValue = 0
                         else:
                             self.ccNumbers[self.updatecc] = self.newValue
-                            data = [self.updateValue + 1, self.newValue]
+                            data = [self.updatecc + 1, self.newValue]
                             __main__.sendOSCMessage('/curve/track/edit/midi_params/cc_number', data)
                             
                     elif self.updateValue == 'length':
@@ -323,7 +319,7 @@ class CurveTrack():
                             self.newValue = 0
                         else:
                             self.ccLengths[self.updatecc] = self.newValue
-                            data = [self.newValue]
+                            data = [self.updatecc + 1, self.newValue]
                             __main__.sendOSCMessage('/curve/track/edit/curve_length', data)
                             
                     elif self.updateValue == 'channel':
@@ -332,7 +328,7 @@ class CurveTrack():
                             self.newValue = 0
                         else:
                             self.ccChannel[self.updatecc] = self.newValue
-                            data = [self.newValue]
+                            data = [self.updatecc + 1, self.newValue]
                             __main__.sendOSCMessage('/curve/track/edit/midi_params/midi_channel', data)
                     self.updateValue = 'none'
                     self.newValue = 0
@@ -340,38 +336,30 @@ class CurveTrack():
             if row == 2 or row == 3:
             
                 if col == 0 or col == 1:
-                    print '4'
                     self.newValue *= 10
                     self.newValue += 4
                 if col == 2 or col == 3:
-                    print '5'
                     self.newValue *= 10
                     self.newValue += 5
                 if col == 4 or col == 5:
-                    print '6'
                     self.newValue *= 10
                     self.newValue += 6
                 if col == 6 or col == 7 or col == 8:
-                    print 'cancel'
                     self.updateValue = 'none'
                     self.newValue = 0
                     
             if row == 4 or row == 5:
             
                 if col == 0 or col == 1:
-                    print '7'
                     self.newValue *= 10
                     self.newValue += 7
                 if col == 2 or col == 3:
-                    print '8'
                     self.newValue *= 10
                     self.newValue += 8
                 if col == 4 or col == 5:
-                    print '9'
                     self.newValue *= 10
                     self.newValue += 9
                 if col == 6 or col == 7:
-                    print '0'
                     self.newValue *= 10
 
 
