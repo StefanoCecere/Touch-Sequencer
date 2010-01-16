@@ -131,7 +131,6 @@ class GridTrack():
 
     def drawPatternSeqLength(self):
         for seqlength in range(8):
-            seqlength += 1
             if seqlength <= self.patternSeqLength:
                 xval = ((seqlength * 64) + (7 * 64))
                 yval = (7 * 64)
@@ -170,6 +169,7 @@ class GridTrack():
         __main__.sendOSCMessage('/grid/track/edit/pattern_seq', data)
 
     def updatePatternSeqLength(self, col):
+        print col
         self.patternSeqLength = (col - 7)
         __main__.sendOSCMessage('/grid/track/edit/pattern_seq_length', [self.patternSeqLength])
 
@@ -180,6 +180,7 @@ class GridTrack():
 
     def editPatternSeqLength(self, *msg):
         length = msg[0][2]
+        print length
         self.patternSeqLength = length
 
     def editGrid(self, *msg):
