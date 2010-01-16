@@ -69,20 +69,18 @@ class MainMenu():
         if 18 < xval < 31 and 1 < yval < 11:
         
             if yval < 4:
-                xval = (xval - 18)
-                if xval < 5:
+                if 18 < xval < 23:
                     self.changeBpm(100)
-                elif xval > 8:
+                elif 22 < xval < 27:
                     self.changeBpm(10)
-                else:
-                    self.changeBpm(10)
+                elif 27 < xval < 31:
+                    self.changeBpm(1)
             elif yval > 8:
-                xval = (xval - 18)
-                if xval < 5:
+                if 18 < xval < 23:
                     self.changeBpm(-100)
-                elif xval > 8:
+                elif 22 < xval < 27:
                     self.changeBpm(-10)
-                else:
+                elif 27 < xval < 31:
                     self.changeBpm(-1)
                 
         elif 20 < xval < 29 and 13 < yval < 17:
@@ -105,7 +103,14 @@ class MainMenu():
                 self.mainSurface.blit(self.gobutton, pos)
             else:
                 self.mainSurface.blit(self.stopbutton, pos)
-    
+            
+        pos = (672, 448)
+        if self.globalplay == 1:
+            self.mainSurface.blit(self.gobutton, pos)
+        else:
+            self.mainSurface.blit(self.stopbutton, pos)
+
+
 
     def drawScreen(self):
         self.drawMainScreen()
