@@ -81,28 +81,28 @@
 #X array track\$1_pattern 7 float 2;
 #X coords 0 0 7 7 40 40 1;
 #X restore 958 -262 graph;
-#X obj 313 -159 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+#X obj 380 -109 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X msg 529 -177 0 \, 1 \, 2 \, 3 \, 4 \, 5 \, 6 \, 7;
-#X obj 556 -134 tabread track\$1_pattern;
+#X msg 567 -179 0 \, 1 \, 2 \, 3 \, 4 \, 5 \, 6 \, 7;
+#X obj 594 -136 tabread track\$1_pattern;
 #X obj 115 -333 tabread track\$1_pattern;
 #X obj 253 -26 outlet;
 #X obj 331 -523 inlet;
 #X obj 331 -497 route track\$1;
 #X obj 780 -158 i;
 #X obj 780 -181 OSCroute /pattern_active_grid /pattern_grid;
-#X obj 529 -199 OSCroute /pattern_seq;
+#X obj 567 -201 OSCroute /pattern_seq;
 #X obj 795 -344 OSCroute /pattern_seq;
 #X obj 100 -188 OSCroute /pattern_number;
-#X obj 313 -181 OSCroute /pattern_seq_length;
+#X obj 380 -131 OSCroute /pattern_seq_length;
 #X obj 736 -109 prepend /grid/pattern_grid/edit;
-#X obj 529 -155 t f f;
-#X obj 529 -112 pack;
+#X obj 567 -157 t f f;
+#X obj 567 -114 pack;
 #X obj 100 -119 prepend /grid/pattern_number;
-#X obj 529 -90 prepend /grid/pattern_seq;
+#X obj 567 -92 prepend /grid/pattern_seq;
 #X obj 795 -258 t b f;
 #X obj 795 -236 i;
-#X obj 313 -114 prepend /grid/pattern_seq/length;
+#X obj 380 -64 prepend /grid/pattern_seq/length;
 #X msg 806 -302 0 0 \, 1 0 \, 2 0 \, 3 0 \, 4 0 \, 5 0 \, 6 0 \, 7
 0;
 #X obj 625 -356 OSCroute /pattern_grid;
@@ -111,7 +111,7 @@
 #X obj 29 -307 mono_pattern_read \$1;
 #X obj 388 -328 OSCroute /get;
 #X obj 426 -433 OSCroute /edit;
-#N canvas 152 76 821 529 midi-notes 1;
+#N canvas 152 76 821 529 midi-notes 0;
 #X obj 263 87 route 1 2 3 4 5 6 7 8;
 #X obj 26 222 i;
 #X obj 26 132 route 1 2 3 4 5 6 7 8;
@@ -423,7 +423,11 @@
 #X obj 63 -386 OSCroute /play;
 #X obj 63 -410 OSCroute /control;
 #X obj 16 -203 print;
-#X obj 313 -137 i 1;
+#X obj 380 -87 i 1;
+#X obj 758 -475 i \$1;
+#X obj 758 -427 prepend /main/track_info;
+#X msg 758 -452 \$1 16step-grid;
+#X obj 758 -504 inlet;
 #X connect 0 0 4 0;
 #X connect 1 0 28 0;
 #X connect 1 1 29 1;
@@ -487,3 +491,7 @@
 #X connect 47 0 2 1;
 #X connect 48 0 47 0;
 #X connect 50 0 30 0;
+#X connect 51 0 53 0;
+#X connect 52 0 14 0;
+#X connect 53 0 52 0;
+#X connect 54 0 51 0;

@@ -19,9 +19,10 @@ class MainMenu():
         self.mainStop, self.mainStoprect        = load_image('mainStop.png','buttons')
         
         self.playingTracks = [0 for notes in range(10)]
-        self.bpm = 140
-        self.globalplay = 0
-        self.trackNo = 0
+        self.trackTypes    = ['' for tracks in range(10)]
+        self.bpm           = 140
+        self.globalplay    = 0
+        self.trackNo       = 0
         
         self.mainSurface = pygame.Surface((1024,600))
         self.mainSurface = self.mainSurface.convert()
@@ -34,7 +35,10 @@ class MainMenu():
         
         track = int(round(yval / 60))
         self.trackNo = track
-        if track < 7:
+        
+        
+        if self.trackTypes[track] == '16step-grid':
+                
             sendOSCMessage('/grid/track_select', [track + 1])
             if 471 < xval < 571:
                 if self.playingTracks[track] == 0:
@@ -45,12 +49,19 @@ class MainMenu():
             else:
                 sendOSCMessage('/grid/track/get/pattern_grid', [0])
                 mainObj.modeChange(2)
-        elif 6 < track < 10:
+                
+        elif self.trackTypes[track] == 'curve':
+                
             sendOSCMessage('/curve/track_select', [track + 1])
             sendOSCMessage('/curve/track/get/curve', [1])
             sendOSCMessage('/curve/track/edit/curve_number', [1])
             mainObj.modeChange(3)
 
+    def trackInfo(self, *msg):
+        trackNum  = (msg[0][2] - 1)
+        trackType = msg[0][3]
+        self.trackTypes[trackNum] = trackType
+        
 
     def changeBpm(self, value):
         bpm = self.bpm + value
@@ -110,12 +121,17 @@ class MainMenu():
                 self.mainSurface.blit(self.gobutton, pos)
             else:
                 self.mainSurface.blit(self.stopbutton, pos)
-            
-        pos = (672, 448)
+                
+            trackType = str(self.trackTypes[tracks])
+            font = pygame.font.Font(pygame.font.match_font('arial'), 45)
+            displaytext = font.render(trackType, 1, (0, 0, 0))
+            textpos = (16,(tracks * 60))
+            self.mainSurface.blit(displaytext, textpos)
+        
         if self.globalplay == 1:
-            self.mainSurface.blit(self.mainPlay, pos)
+            self.mainSurface.blit(self.mainPlay, (672, 448))
         else:
-            self.mainSurface.blit(self.mainStop, pos)
+            self.mainSurface.blit(self.mainStop, (672, 448))
 
 
 
@@ -173,8 +189,8 @@ class Globject():
         
         self.mode = 1
         
-        self.curve       = CurveTrack()
-        self.grid      = GridTrack()
+        self.curve      = CurveTrack()
+        self.grid16     = GridTrack()
         self.menu       = MainMenu()
         self.modeObject = self.menu
 
@@ -190,7 +206,7 @@ class Globject():
             if mode == 1:
                 self.modeObject = self.menu
             elif mode == 2:
-                self.modeObject = self.grid
+                self.modeObject = self.grid16
             elif mode == 3:
                 self.modeObject = self.curve
 
@@ -225,10 +241,16 @@ def main():
     osc.bind(mainObj.curve.editLengths, '/curve/curve_lengths')
     osc.bind(mainObj.curve.editPlayStates, '/curve/play_states')
 
-    osc.bind(mainObj.grid.editGrid, '/grid/pattern_grid/edit')
-    osc.bind(mainObj.grid.editMidi, '/grid/midi_params')
-    osc.bind(mainObj.grid.editPatternSeqLength, '/grid/pattern_seq/length')
-    osc.bind(mainObj.grid.editPatternSeq, '/grid/pattern_seq')
+    osc.bind(mainObj.grid16.editGrid, '/grid/pattern_grid/edit')
+    osc.bind(mainObj.grid16.editMidi, '/grid/midi_params')
+    osc.bind(mainObj.grid16.editPatternSeqLength, '/grid/pattern_seq/length')
+    osc.bind(mainObj.grid16.editPatternSeq, '/grid/pattern_seq')
+    
+    osc.bind(mainObj.menu.trackInfo, '/main/track_info')
+#    osc.bind(printStuff, '/main/track_info')
+
+    
+    sendOSCMessage('/track_info', ['bang'])
     
     loop = True
     while loop:
