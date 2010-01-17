@@ -45,6 +45,18 @@ The Pure Data patch uses some OSC externals from mrPeach. Will run fine
 with PDExtended, otherwise make sure that the correct externals are available.
 
 
+Still to do
+-----------
+There are plans to add in a swing setting for the grids to allow swing to
+be added to 8th or 16th notes
+The UI is pretty poor and could do with some improvements
+Follow mode needs to be added so grids can be edited and seen changing in real time
+A step number indicator is needed as well
+Track info on the main screen would be good
+A 16 * 32 grid would be useful to add
+Eventually a more freeform grid more like a midi matrix would be nice to have
+
+
 
 Useful things
 -------------
