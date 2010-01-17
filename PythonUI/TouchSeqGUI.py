@@ -92,11 +92,15 @@ class MainMenu():
 
     def drawMainScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
-        bpm = str(self.bpm)
+        if self.bpm < 100:
+            bpm = ' ' + str(self.bpm)
+        else:
+            bpm = str(self.bpm)
         font = pygame.font.Font(None, 256)
         bpmtext = font.render(bpm, 1, (255, 255, 255))
         textpos = ((20 * 32),(4 * 32))
         self.mainSurface.blit(bpmtext, textpos)
+        
         for tracks in range(10):
             pos = (444, ((tracks *60) + 5))
             if self.playingTracks[tracks] == 1:
