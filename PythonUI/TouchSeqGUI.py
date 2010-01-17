@@ -92,13 +92,14 @@ class MainMenu():
 
     def drawMainScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
+        
         if self.bpm < 100:
             bpm = ' ' + str(self.bpm)
         else:
             bpm = str(self.bpm)
-        font = pygame.font.Font(None, 256)
+        font = pygame.font.Font(pygame.font.match_font('arial') , 196)
         bpmtext = font.render(bpm, 1, (255, 255, 255))
-        textpos = ((20 * 32),(4 * 32))
+        textpos = ((20 * 32),(3 * 32))
         self.mainSurface.blit(bpmtext, textpos)
         
         for tracks in range(10):
@@ -216,7 +217,7 @@ def main():
     mainObj = Globject()
     
     clock = pygame.time.Clock()
-
+    
     osc.bind(mainObj.curve.editCurve, '/curve/gui_curve/edit') 
     osc.bind(mainObj.curve.editMidi, '/curve/midi_params')
     osc.bind(mainObj.curve.editLengths, '/curve/curve_lengths')

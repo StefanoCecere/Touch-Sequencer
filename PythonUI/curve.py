@@ -34,6 +34,8 @@ class CurveTrack():
         
         self.trackMode = 'curve'
         
+        self.fontName         = pygame.font.match_font('arial')
+        
         self.black = 0, 0, 0
         self.prevPos = (0, 0)
         
@@ -79,21 +81,21 @@ class CurveTrack():
         for ccnumber in range(8):
         
             ccval = str(self.ccNumbers[ccnumber])
-            font = pygame.font.Font(None, 62)
+            font = pygame.font.Font(self.fontName, 50)
             displaytext = font.render(ccval, 1, (255, 255, 255))
-            textpos = ((64 + 4),((ccnumber * 48) + 64 + 6))
+            textpos = ((64 + 10),((ccnumber * 48) + 60))
             self.trackSurface.blit(displaytext, textpos)
         
             channel = str(self.ccChannel[ccnumber])
-            font = pygame.font.Font(None, 62)
+            font = pygame.font.Font(self.fontName, 50)
             displaytext = font.render(channel, 1, (255, 255, 255))
-            textpos = ((320 + 4),((ccnumber * 48) + 64 + 6))
+            textpos = ((320 + 10),((ccnumber * 48) + 60))
             self.trackSurface.blit(displaytext, textpos)
         
             length = str(self.ccLengths[ccnumber])
-            font = pygame.font.Font(None, 62)
+            font = pygame.font.Font(self.fontName, 50)
             displaytext = font.render(length, 1, (255, 255, 255))
-            textpos = ((192 + 4),((ccnumber * 48) + 64 + 6))
+            textpos = ((192 + 10),((ccnumber * 48) + 60))
             self.trackSurface.blit(displaytext, textpos)
         
             buttonval = self.ccPlaying[ccnumber]
@@ -103,9 +105,9 @@ class CurveTrack():
                 self.trackSurface.blit(self.gobutton, ((448 + 4),((ccnumber * 48) + 64)))
 
         ccval = str(self.newValue)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         ccvaltext = font.render(ccval, 1, (255, 255, 255))
-        textpos = (640,(320 + 4))
+        textpos = (650,(313))
         self.trackSurface.blit(ccvaltext, textpos)
 
     def drawCurveScreen(self):
@@ -295,12 +297,21 @@ class CurveTrack():
                 if col == 0 or col == 1:
                     self.newValue *= 10
                     self.newValue += 1
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2 or col == 3:
                     self.newValue *= 10
                     self.newValue += 2
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 4 or col == 5:
                     self.newValue *= 10
                     self.newValue += 3
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                     
                 if col == 6 or col == 7 or col == 8:
                     
@@ -338,12 +349,21 @@ class CurveTrack():
                 if col == 0 or col == 1:
                     self.newValue *= 10
                     self.newValue += 4
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2 or col == 3:
                     self.newValue *= 10
                     self.newValue += 5
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 4 or col == 5:
                     self.newValue *= 10
                     self.newValue += 6
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 6 or col == 7 or col == 8:
                     self.updateValue = 'none'
                     self.newValue = 0
@@ -353,14 +373,26 @@ class CurveTrack():
                 if col == 0 or col == 1:
                     self.newValue *= 10
                     self.newValue += 7
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2 or col == 3:
                     self.newValue *= 10
                     self.newValue += 8
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 4 or col == 5:
                     self.newValue *= 10
                     self.newValue += 9
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 6 or col == 7:
                     self.newValue *= 10
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
 
 
     def inputOptionsScreen(self, pos):

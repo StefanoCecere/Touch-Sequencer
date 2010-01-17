@@ -28,11 +28,13 @@ class GridTrack():
         self.midiVelocity     = 1
         self.midiChannel      = 1
         
-        self.swingType        = '8th'
+        self.swingType        = '8'
         self.swingAmount      = 100
         
         self.patternSeqLength = 1
         self.patternNumber    = 0
+        
+        self.fontName         = pygame.font.match_font('arial')
         
         self.mode             = 'grid'
         
@@ -90,45 +92,45 @@ class GridTrack():
         self.trackSurface.blit(self.optionsbg, (512,0))
         for note in range(8):
             noteval = str(self.midinotes[note])
-            font = pygame.font.Font(None, 62)
+            font = pygame.font.Font(self.fontName, 50)
             notetext = font.render(noteval, 1, (255, 255, 255))
-            textpos = ((550 + 16),((note * 48) + 32 + 6))
+            textpos = ((512 + 32 + 4),((note * 48) + 32 - 4))
             self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiVelocity)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (704,(64 + 2))
+        textpos = (710,(64 - 7))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiChannel)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (704,(160 + 2))
+        textpos = (710,(160 - 7))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiLength)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (704,(256 + 2))
+        textpos = (710,(256 - 7))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.newValue)
-        font = pygame.font.Font(None, 42)
+        font = pygame.font.Font(self.fontName, 34)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (864,(130 + 4))
+        textpos = (866,(130 - 6))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.swingAmount)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (864,(352 + 2))
+        textpos = (870,(352 - 7))
         self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.swingType)
-        font = pygame.font.Font(None, 96)
+        font = pygame.font.Font(self.fontName, 70)
         notetext = font.render(noteval, 1, (255, 255, 255))
-        textpos = (864,(256 + 4))
+        textpos = (870,(256 - 7))
         self.trackSurface.blit(notetext, textpos)
 
     def drawPatternSeq(self):
@@ -290,11 +292,11 @@ class GridTrack():
                 __main__.sendOSCMessage('/grid/track/control/play', [0])
                 
         elif 26 < col < 31 and 7 < row < 10:
-            if self.swingType == '8th':
-                self.swingType = '16th'
+            if self.swingType == '8':
+                self.swingType = '16'
             #     __main__.sendOSCMessage('/grid/track/edit/swing_type', [0])
             else:
-                self.swingType = '8th'
+                self.swingType = '8'
             #     __main__.sendOSCMessage('/grid/track/edit/swing_type', [1])
         elif 26 < col < 31 and 10 < row < 13:
             self.updateValue = 11
@@ -310,12 +312,21 @@ class GridTrack():
                 if col == 0:
                     self.newValue *= 10
                     self.newValue += 1
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 1:
                     self.newValue *= 10
                     self.newValue += 2
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2:
                     self.newValue *= 10
                     self.newValue += 3
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 3:
                     if self.updateValue < 8:
                         if self.newValue > 127:
@@ -363,12 +374,21 @@ class GridTrack():
                 if col == 0:
                     self.newValue *= 10
                     self.newValue += 4
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 1:
                     self.newValue *= 10
                     self.newValue += 5
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2:
                     self.newValue *= 10
                     self.newValue += 6
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 3:
                     self.updateValue = -1
                     self.newValue = 0
@@ -376,14 +396,26 @@ class GridTrack():
                 if col == 0:
                     self.newValue *= 10
                     self.newValue += 7
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 1:
                     self.newValue *= 10
                     self.newValue += 8
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 2:
                     self.newValue *= 10
                     self.newValue += 9
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
                 if col == 3:
                     self.newValue *= 10
+                    if self.newValue > 999:
+                        self.updateValue = -1
+                        self.newValue = 0
 
 
     def inputOptionsScreen(self, pos):
