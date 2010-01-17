@@ -12,9 +12,11 @@ from pygame.compat import geterror
 class MainMenu():
 
     def __init__(self):
-        self.mainBG, self.mainBGrect = load_image('mainMenu.png','backgrounds')
-        self.gobutton, self.gobuttonrect = load_image('gobutton.png','buttons')
-        self.stopbutton, self.stopbuttonrect = load_image('stopbutton.png','buttons')
+        self.mainBG, self.mainBGrect            = load_image('mainMenu.png','backgrounds')
+        self.gobutton, self.gobuttonrect        = load_image('gobutton.png','buttons')
+        self.stopbutton, self.stopbuttonrect    = load_image('stopbutton.png','buttons')
+        self.mainPlay, self.mainPlayrect        = load_image('mainPlay.png','buttons')
+        self.mainStop, self.mainStoprect        = load_image('mainStop.png','buttons')
         
         self.playingTracks = [0 for notes in range(10)]
         self.bpm = 140
@@ -34,7 +36,7 @@ class MainMenu():
         self.trackNo = track
         if track < 7:
             sendOSCMessage('/grid/track_select', [track + 1])
-            if 444 < xval < 544:
+            if 471 < xval < 571:
                 if self.playingTracks[track] == 0:
                     self.playingTracks[track] = 1
                 else:
@@ -103,7 +105,7 @@ class MainMenu():
         self.mainSurface.blit(bpmtext, textpos)
         
         for tracks in range(10):
-            pos = (444, ((tracks *60) + 5))
+            pos = (471, ((tracks *60) + 5))
             if self.playingTracks[tracks] == 1:
                 self.mainSurface.blit(self.gobutton, pos)
             else:
@@ -111,9 +113,9 @@ class MainMenu():
             
         pos = (672, 448)
         if self.globalplay == 1:
-            self.mainSurface.blit(self.gobutton, pos)
+            self.mainSurface.blit(self.mainPlay, pos)
         else:
-            self.mainSurface.blit(self.stopbutton, pos)
+            self.mainSurface.blit(self.mainStop, pos)
 
 
 

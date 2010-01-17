@@ -1,6 +1,5 @@
 import os, pygame, __main__, bresenhams
 
-
 class CurveTrack():
 
     def __init__(self):
@@ -100,14 +99,14 @@ class CurveTrack():
         
             buttonval = self.ccPlaying[ccnumber]
             if buttonval == 0:
-                self.trackSurface.blit(self.stopbutton, ((448 + 4),((ccnumber * 48) + 64)))
+                self.trackSurface.blit(self.stopbutton, (480,((ccnumber * 48) + 64)))
             elif buttonval == 1:
-                self.trackSurface.blit(self.gobutton, ((448 + 4),((ccnumber * 48) + 64)))
+                self.trackSurface.blit(self.gobutton, (480,((ccnumber * 48) + 64)))
 
         ccval = str(self.newValue)
         font = pygame.font.Font(self.fontName, 70)
         ccvaltext = font.render(ccval, 1, (255, 255, 255))
-        textpos = (650,(313))
+        textpos = (645,(313))
         self.trackSurface.blit(ccvaltext, textpos)
 
     def drawCurveScreen(self):
@@ -403,4 +402,3 @@ class CurveTrack():
             self.updateValue = 'none'
         else:
             self.inputMidiOptions(pos)
-

@@ -1,6 +1,5 @@
 import os, pygame, __main__
 
-
 class GridTrack():
 
     def __init__(self):
@@ -11,8 +10,8 @@ class GridTrack():
         self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.png','buttons')
         self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.png','buttons')
         self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.png','backgrounds')
-        self.gobutton, self.gobuttonrect             = __main__.load_image('gobutton.png','buttons')
-        self.stopbutton, self.stopbuttonrect         = __main__.load_image('stopbutton.png','buttons')
+        self.gobutton, self.gobuttonrect             = __main__.load_image('optsButtonGreen.png','buttons')
+        self.stopbutton, self.stopbuttonrect         = __main__.load_image('optsButtonRed.png','buttons')
         
         self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
         self.patterngrid = [0 for col in range(8)]
@@ -136,10 +135,10 @@ class GridTrack():
     def drawPatternSeq(self):
         for col in range(8):
             for row in range(8):
-                if (self.patterngrid[col]) == row:
-                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
-                else:
+                if (self.patterngrid[col]) == 7 - row:
                     self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
+                else:
+                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
 
     def drawPlayButton(self):
         buttonval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
@@ -153,11 +152,11 @@ class GridTrack():
             if seqlength < self.patternSeqLength:
                 xval = ((seqlength * 64) + (8 * 64))
                 yval = (7 * 64)
-                self.trackSurface.blit(self.button1, (xval,yval))
+                self.trackSurface.blit(self.button2, (xval,yval))
             else:
                 xval = ((seqlength * 64) + (8 * 64))
                 yval = (7 * 64)
-                self.trackSurface.blit(self.button2, (xval,yval))
+                self.trackSurface.blit(self.button1, (xval,yval))
 
 
     def drawGridScreen(self):
@@ -183,8 +182,9 @@ class GridTrack():
         __main__.sendOSCMessage('/grid/track/edit/pattern_grid', data)
 
     def updatePatternSeq(self, col, row):
-        self.patterngrid[col] = row
+        self.patterngrid[col] = (7 - row)
         data = [col, (7 - row)]
+        print 7 - row
         __main__.sendOSCMessage('/grid/track/edit/pattern_seq', data)
 
     def updatePatternSeqLength(self, col):
