@@ -5,6 +5,10 @@ class GridTrack():
     def __init__(self):
         self.button1, self.button1rect               = __main__.load_image('button1.png','buttons')
         self.button2, self.button1rect               = __main__.load_image('button2.png','buttons')
+        self.button3, self.button1rect               = __main__.load_image('button3.png','buttons')
+        self.button4, self.button1rect               = __main__.load_image('button4.png','buttons')
+        self.button5, self.button1rect               = __main__.load_image('button5.png','buttons')
+        
         self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.png','buttons')
         self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.png','buttons')
         self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.png','buttons')
@@ -37,6 +41,8 @@ class GridTrack():
         
         self.mode             = 'grid'
         
+        self.followMode       = 0
+        
         self.trackSurface = pygame.Surface((1024,600))
         self.trackSurface = self.trackSurface.convert()
         self.trackSurface.fill((250, 250, 250))
@@ -63,6 +69,10 @@ class GridTrack():
         for col in range(16):
             for row in range(8):
                 buttonval = self.trackgrid[col][row]
+                if self.followMode == 1:
+                    if col == __main__.mainObj.menu.stepNumber:
+                        buttonval += 2
+                        
                 if buttonval == 0:
                     self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
                 elif buttonval == 1:
@@ -174,9 +184,6 @@ class GridTrack():
         
     # functions that will be called from OSC messages
     
-    def setSeqStep(self, step):
-        self.trackgrid[col][row] = buttonval
-
     def updateGridButton(self, col, row):
         data = [row + 1, col + 1, self.trackgrid[col][row]]
         __main__.sendOSCMessage('/grid/track/edit/pattern_grid', data)
@@ -184,7 +191,6 @@ class GridTrack():
     def updatePatternSeq(self, col, row):
         self.patterngrid[col] = (7 - row)
         data = [col, (7 - row)]
-        print 7 - row
         __main__.sendOSCMessage('/grid/track/edit/pattern_seq', data)
 
     def updatePatternSeqLength(self, col):
@@ -193,7 +199,7 @@ class GridTrack():
 
     def editPatternSeq(self, *msg):
         xval = msg[0][2]
-        yval = 7 - msg[0][3]
+        yval = msg[0][3]
         self.patterngrid[xval] = yval
 
     def editPatternSeqLength(self, *msg):
@@ -242,12 +248,20 @@ class GridTrack():
     
     def navButtonInterface(self, col):
         if col < 8:
+            if self.followMode == 1:
+                self.followMode = 0
+                __main__.sendOSCMessage('/grid/track/edit/follow_mode',[0])
+            
             __main__.sendOSCMessage('/grid/track/get/pattern_grid', [col])
             __main__.sendOSCMessage('/grid/track/edit/pattern_number', [col])
             self.gridpattern = col
             self.patternNumber = col
             self.mode = 'grid'
         elif col == 8 or col == 9:
+            if self.followMode == 1:
+                self.followMode = 0
+                __main__.sendOSCMessage('/grid/track/edit/follow_mode',[0])
+                
             self.patternNumber = 8
             self.mode = 'options'
             __main__.sendOSCMessage('/grid/track/get/pattern_seq',['bang'])
@@ -256,10 +270,18 @@ class GridTrack():
         #    __main__.sendOSCMessage('/grid/track/get/swing_amount', ['bang'])
         #    __main__.sendOSCMessage('/grid/track/get/swing_amount', ['bang'])
         elif col == 10 or col == 11:
-            blah = 1
+            if self.followMode == 0:
+                self.followMode = 1
+                __main__.sendOSCMessage('/grid/track/edit/follow_mode',[1])
+            self.patternNumber = 8
+            self.mode = 'grid'
         elif col == 12 or col == 13:
-            blah = 1
+            pass
         elif col == 14 or col == 15:
+            if self.followMode == 1:
+                self.followMode = 0
+                __main__.sendOSCMessage('/grid/track/edit/follow_mode',[0])
+                
             self.patternNumber = 0
             self.mode = 'grid'
             __main__.mainObj.modeChange(1)

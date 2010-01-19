@@ -23,6 +23,7 @@ class MainMenu():
         self.bpm           = 140
         self.globalplay    = 0
         self.trackNo       = 0
+        self.stepNumber    = 0
         
         self.mainSurface = pygame.Surface((1024,600))
         self.mainSurface = self.mainSurface.convert()
@@ -56,6 +57,10 @@ class MainMenu():
             sendOSCMessage('/curve/track/get/curve', [1])
             sendOSCMessage('/curve/track/edit/curve_number', [1])
             mainObj.modeChange(3)
+
+    def seqStepNumber(self, *msg):
+        stepNum  = msg[0][2]
+        self.stepNumber = stepNum
 
     def trackInfo(self, *msg):
         trackNum  = (msg[0][2] - 1)
@@ -247,8 +252,8 @@ def main():
     osc.bind(mainObj.grid16.editPatternSeq, '/grid/pattern_seq')
     
     osc.bind(mainObj.menu.trackInfo, '/main/track_info')
-#    osc.bind(printStuff, '/main/track_info')
 
+    osc.bind(mainObj.menu.seqStepNumber, '/main/stepnumber')
     
     sendOSCMessage('/track_info', ['bang'])
     
