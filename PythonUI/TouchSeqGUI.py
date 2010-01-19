@@ -37,26 +37,19 @@ class MainMenu():
         track = int(round(yval / 60))
         self.trackNo = track
         
+        sendOSCMessage('/grid/track_select', [track + 1])
         
-        if self.trackTypes[track] == '16step-grid':
-                
-            sendOSCMessage('/grid/track_select', [track + 1])
-            if 471 < xval < 571:
-                if self.playingTracks[track] == 0:
-                    self.playingTracks[track] = 1
-                else:
-                    self.playingTracks[track] = 0
-                sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
+        if 471 < xval < 571:
+            if self.playingTracks[track] == 0:
+                self.playingTracks[track] = 1
             else:
-                sendOSCMessage('/grid/track/get/pattern_grid', [0])
-                mainObj.modeChange(2)
-                
-        elif self.trackTypes[track] == 'curve':
-                
-            sendOSCMessage('/curve/track_select', [track + 1])
-            sendOSCMessage('/curve/track/get/curve', [1])
-            sendOSCMessage('/curve/track/edit/curve_number', [1])
-            mainObj.modeChange(3)
+                self.playingTracks[track] = 0
+            sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
+            
+        else:
+            
+            mainObj.modeChange(self.trackTypes[track])
+            
 
     def seqStepNumber(self, *msg):
         stepNum  = msg[0][2]
@@ -192,7 +185,7 @@ class Globject():
         background = pygame.Surface(self.screen.get_size())
         self.background = background.convert()
         
-        self.mode = 1
+        self.mode = 'main'
         
         self.curve      = CurveTrack()
         self.grid16     = GridTrack()
@@ -208,12 +201,14 @@ class Globject():
     def modeChange(self, mode):
         if mode != self.mode:
             self.mode = mode
-            if mode == 1:
+            if mode == 'main':
                 self.modeObject = self.menu
-            elif mode == 2:
+            elif mode == 'grid16':
                 self.modeObject = self.grid16
-            elif mode == 3:
+                self.modeObject.trackSetup()
+            elif mode == 'curve':
                 self.modeObject = self.curve
+                self.modeObject.trackSetup()
 
 
 

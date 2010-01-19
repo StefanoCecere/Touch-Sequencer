@@ -119,6 +119,9 @@ class CurveTrack():
         self.drawMidiOptions()
         self.drawNavButtons()
 
+    def trackSetup(self):
+        __main__.sendOSCMessage('/curve/track/get/curve', [1])
+
     #functions for OSC communication
 
     def sendCurveData(self):
@@ -228,7 +231,6 @@ class CurveTrack():
     def navButtonInterface(self, col):
         if col < 8:
             __main__.sendOSCMessage('/curve/track/get/curve', [col + 1])
-            __main__.sendOSCMessage('/curve/track/edit/curve_number', [col + 1])
             self.curvepattern = col
             self.patternNumber = col
             self.trackMode = 'curve'
@@ -246,7 +248,7 @@ class CurveTrack():
         elif col == 14 or col == 15:
             self.patternNumber = 0
             self.trackMode = 'curve'
-            __main__.mainObj.modeChange(1)
+            __main__.mainObj.modeChange('main')
 
     def inputMidiOptions(self, pos):
         xval = pos[0]

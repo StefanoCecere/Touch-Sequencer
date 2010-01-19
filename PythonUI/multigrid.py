@@ -62,6 +62,9 @@ class GridTrack():
         elif self.mode == 'grid':
             self.drawGridScreen()
         return self.trackSurface
+
+    def trackSetup(self):
+        __main__.sendOSCMessage('/grid/track/get/pattern_grid', [0])
   
     # display functions
     
@@ -253,7 +256,6 @@ class GridTrack():
                 __main__.sendOSCMessage('/grid/track/edit/follow_mode',[0])
             
             __main__.sendOSCMessage('/grid/track/get/pattern_grid', [col])
-            __main__.sendOSCMessage('/grid/track/edit/pattern_number', [col])
             self.gridpattern = col
             self.patternNumber = col
             self.mode = 'grid'
@@ -284,7 +286,7 @@ class GridTrack():
                 
             self.patternNumber = 0
             self.mode = 'grid'
-            __main__.mainObj.modeChange(1)
+            __main__.mainObj.modeChange('main')
 
     def inputMidiOptions(self, pos):
         xval = pos[0]
