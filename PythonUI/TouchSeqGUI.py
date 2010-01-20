@@ -3,7 +3,7 @@
 #Import Modules
 import os, pygame, osc
 
-from multigrid import *
+from grid16 import *
 from curve import *
 
 from pygame.locals import *
