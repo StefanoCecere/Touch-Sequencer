@@ -1,4 +1,4 @@
-#N canvas 33 94 589 418 10;
+#N canvas 33 94 702 457 10;
 #X obj 261 156 until;
 #X obj 261 214 pointer;
 #X obj 226 243 pointer;
@@ -35,6 +35,8 @@
 #X msg 395 338 8 \$1 \$2;
 #X obj 227 65 t b b f b b;
 #X msg 503 164 clear;
+#X text 14 14 Arguments are :-;
+#X text 16 31 1: data window number;
 #X connect 0 0 3 0;
 #X connect 1 0 2 1;
 #X connect 1 1 24 0;

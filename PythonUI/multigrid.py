@@ -74,7 +74,7 @@ class GridTrack():
                 buttonval = self.trackgrid[col][row]
                 if self.followMode == 1:
                     if col == __main__.mainObj.menu.stepNumber:
-                        buttonval += 2
+                        buttonval += 3
                         
                 if buttonval == 0:
                     self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
