@@ -36,18 +36,18 @@ o float p;
 #X obj 109 64 struct grid16_track float a float b float c float d float
 e float f float g float h;
 #X restore 28 28 pd grid16_track-template;
-#N canvas 390 378 701 300 grid32_track-template 0;
+#N canvas 301 252 701 300 grid32_track-template 0;
 #X obj 109 64 struct grid32_track float a float b float c float d float
 e float f float g float h float i float j float k float l float m float
 n float o float p;
 #X restore 28 49 pd grid32_track-template;
 #X obj 381 201 grid16_track 2 2 manual;
+#X obj 381 178 grid32_track 1 1 manual;
 #X obj 381 223 grid16_track 3 3 manual;
 #X obj 381 247 grid16_track 4 4 manual;
 #X obj 380 275 grid16_track 5 5 manual;
 #X obj 380 300 grid16_track 6 6 manual;
 #X obj 379 327 grid16_track 7 7 manual;
-#X obj 381 178 grid32_track 1 1 manual;
 #X connect 0 0 26 1;
 #X connect 1 0 26 0;
 #X connect 2 0 29 0;

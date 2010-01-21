@@ -246,10 +246,16 @@ def main():
     osc.bind(mainObj.curve.editLengths, '/curve/curve_lengths')
     osc.bind(mainObj.curve.editPlayStates, '/curve/play_states')
 
-    osc.bind(mainObj.grid16.editGrid, '/grid/pattern_grid/edit')
-    osc.bind(mainObj.grid16.editMidi, '/grid/midi_params')
-    osc.bind(mainObj.grid16.editPatternSeqLength, '/grid/pattern_seq/length')
-    osc.bind(mainObj.grid16.editPatternSeq, '/grid/pattern_seq')
+    osc.bind(mainObj.grid16.editGrid, '/grid16/pattern_grid/edit')
+    osc.bind(mainObj.grid16.editMidi, '/grid16/midi_params')
+    osc.bind(mainObj.grid16.editPatternSeqLength, '/grid16/pattern_seq/length')
+    osc.bind(mainObj.grid16.editPatternSeq, '/grid16/pattern_seq')
+
+    osc.bind(mainObj.grid32.editGrid, '/grid32/pattern_grid/edit')
+    osc.bind(mainObj.grid32.editMidi, '/grid32/midi_params')
+    osc.bind(mainObj.grid32.editPatternSeqLength, '/grid32/pattern_seq/length')
+    osc.bind(mainObj.grid32.editPatternSeq, '/grid32/pattern_seq')
+
     
     osc.bind(mainObj.menu.trackInfo, '/main/track_info')
 
