@@ -4,6 +4,7 @@
 import os, pygame, osc
 
 from grid16 import *
+from grid32 import *
 from curve import *
 
 from pygame.locals import *
@@ -188,7 +189,8 @@ class Globject():
         self.mode = 'main'
         
         self.curve      = CurveTrack()
-        self.grid16     = GridTrack()
+        self.grid16     = Grid16Track()
+        self.grid32     = Grid32Track()
         self.menu       = MainMenu()
         self.modeObject = self.menu
 
@@ -205,6 +207,9 @@ class Globject():
                 self.modeObject = self.menu
             elif mode == 'grid16':
                 self.modeObject = self.grid16
+                self.modeObject.trackSetup()
+            elif mode == 'grid32':
+                self.modeObject = self.grid32
                 self.modeObject.trackSetup()
             elif mode == 'curve':
                 self.modeObject = self.curve

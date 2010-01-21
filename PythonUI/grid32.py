@@ -1,13 +1,16 @@
 import os, pygame, __main__
 
-class GridTrack():
+class Grid32Track():
 
     def __init__(self):
         self.button1, self.button1rect               = __main__.load_image('button1.png','buttons')
         self.button2, self.button1rect               = __main__.load_image('button2.png','buttons')
-        self.button3, self.button1rect               = __main__.load_image('button3.png','buttons')
-        self.button4, self.button1rect               = __main__.load_image('button4.png','buttons')
-        self.button5, self.button1rect               = __main__.load_image('button5.png','buttons')
+        
+        self.smallbutton1, self.smallbutton1rect     = __main__.load_image('smallbutton1.png','buttons')
+        self.smallbutton2, self.smallbutton1rect     = __main__.load_image('smallbutton2.png','buttons')
+        self.smallbutton3, self.smallbutton1rect     = __main__.load_image('smallbutton3.png','buttons')
+        self.smallbutton4, self.smallbutton1rect     = __main__.load_image('smallbutton4.png','buttons')
+        self.smallbutton5, self.smallbutton1rect     = __main__.load_image('smallbutton5.png','buttons')
         
         self.navButton1, self.navButton1rect         = __main__.load_image('navButton1.png','buttons')
         self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.png','buttons')
@@ -17,9 +20,9 @@ class GridTrack():
         self.gobutton, self.gobuttonrect             = __main__.load_image('optsButtonGreen.png','buttons')
         self.stopbutton, self.stopbuttonrect         = __main__.load_image('optsButtonRed.png','buttons')
         
-        self.trackgrid   = [[0 for row in range(8)] for col in range(16)]
-        self.patterngrid = [0 for col in range(8)]
-        self.midinotes   = [0 for notes in range(8)]
+        self.trackgrid   = [[0 for row in range(16)] for col in range(32)]
+        self.patterngrid = [0 for col in range(16)]
+        self.midinotes   = [0 for notes in range(16)]
         
         self.updateValue      = -1
         self.newValue         = 0
@@ -69,23 +72,23 @@ class GridTrack():
     # display functions
     
     def drawGrid(self):
-        for col in range(16):
-            for row in range(8):
+        for col in range(32):
+            for row in range(16):
                 buttonval = self.trackgrid[col][row]
                 if self.followMode == 1:
                     if col == __main__.mainObj.menu.stepNumber:
                         buttonval += 3
                         
                 if buttonval == 0:
-                    self.trackSurface.blit(self.button1, ((col * 64),(row * 64)))
+                    self.trackSurface.blit(self.smallbutton1, ((col * 32),(row * 32)))
                 elif buttonval == 1:
-                    self.trackSurface.blit(self.button2, ((col * 64),(row * 64)))
+                    self.trackSurface.blit(self.smallbutton2, ((col * 32),(row * 32)))
                 elif buttonval == 2:
-                    self.trackSurface.blit(self.button3, ((col * 64),(row * 64)))
+                    self.trackSurface.blit(self.smallbutton3, ((col * 32),(row * 32)))
                 elif buttonval == 3:
-                    self.trackSurface.blit(self.button4, ((col * 64),(row * 64)))
+                    self.trackSurface.blit(self.smallbutton4, ((col * 32),(row * 32)))
                 elif buttonval == 4:
-                    self.trackSurface.blit(self.button5, ((col * 64),(row * 64)))
+                    self.trackSurface.blit(self.smallbutton5, ((col * 32),(row * 32)))
 
     def drawNavButtons(self):
         for col in range(12):
@@ -220,8 +223,8 @@ class GridTrack():
                 self.trackgrid[xval][yval] = dval
 
     def clearGrid(self):
-        for col in range(16):
-            for row in range(8):
+        for col in range(32):
+            for row in range(16):
                 self.trackgrid[col][row] = 0
 
     def editMidi(self, *msg):
@@ -240,10 +243,10 @@ class GridTrack():
     # mouse input functions
 
     def inputGridScreen(self, pos):
-        col = int(round(pos[0] / 64))
-        row = int(round(pos[1] / 64))
+        col = int(round(pos[0] / 32))
+        row = int(round(pos[1] / 32))
         
-        if row < 8:
+        if row < 16:
             self.updateGridButton(col, row)
         else:
             self.navButtonInterface(col)
@@ -300,11 +303,11 @@ class GridTrack():
             self.keypadPress(xval - 864, yval - 32)
             
         elif 21 < col < 26 and 1 < row < 4:
-            self.updateValue = 8
+            self.updateValue = 16
         elif 21 < col < 26 and 4 < row < 7:
-            self.updateValue = 9
+            self.updateValue = 17
         elif 21 < col < 26 and 7 < row < 10:
-            self.updateValue = 10
+            self.updateValue = 18
         elif 21 < col < 26 and 10 < row < 13:
             self.updateValue = -1
             playval = __main__.mainObj.menu.playingTracks[__main__.mainObj.menu.trackNo]
@@ -323,7 +326,7 @@ class GridTrack():
                 self.swingType = '8'
             #     __main__.sendOSCMessage('/grid/track/edit/swing_type', [1])
         elif 26 < col < 31 and 10 < row < 13:
-            self.updateValue = 11
+            self.updateValue = 19
         
         else:
             self.updateValue = -1
@@ -352,7 +355,7 @@ class GridTrack():
                         self.updateValue = -1
                         self.newValue = 0
                 if col == 3:
-                    if self.updateValue < 8:
+                    if self.updateValue < 16:
                         if self.newValue > 127:
                             self.updateValue = -1
                             self.newValue = 0
@@ -360,7 +363,7 @@ class GridTrack():
                             self.midinotes[self.updateValue] = self.newValue
                             data = [self.updateValue + 1, self.newValue]
                             __main__.sendOSCMessage('/grid/track/edit/notes', data)
-                    elif self.updateValue == 8:
+                    elif self.updateValue == 16:
                         if self.newValue > 127:
                             self.updateValue = -1
                             self.newValue = 0
@@ -368,7 +371,7 @@ class GridTrack():
                             self.midiVelocity = self.newValue
                             data = [self.newValue]
                             __main__.sendOSCMessage('/grid/track/edit/midi_params/velocity', data)
-                    elif self.updateValue == 9:
+                    elif self.updateValue == 17:
                         if self.newValue > 16 or self.newValue < 1:
                             self.updateValue = -1
                             self.newValue = 0
@@ -376,7 +379,7 @@ class GridTrack():
                             self.midiChannel = self.newValue
                             data = [self.newValue]
                             __main__.sendOSCMessage('/grid/track/edit/midi_params/channel', data)
-                    elif self.updateValue == 10:
+                    elif self.updateValue == 18:
                         if self.newValue > 32 or self.newValue < 1:
                             self.updateValue = -1
                             self.newValue = 0
@@ -384,7 +387,7 @@ class GridTrack():
                             self.midiLength = self.newValue
                             data = [self.newValue]
                             __main__.sendOSCMessage('/grid/track/edit/midi_params/length', data)
-                    elif self.updateValue == 11:
+                    elif self.updateValue == 19:
                         if self.newValue > 100:
                             self.updateValue = -1
                             self.newValue = 0

@@ -1,6 +1,6 @@
 import os, pygame, __main__
 
-class GridTrack():
+class Grid16Track():
 
     def __init__(self):
         self.button1, self.button1rect               = __main__.load_image('button1.png','buttons')

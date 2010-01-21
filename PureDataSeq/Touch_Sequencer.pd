@@ -1,5 +1,8 @@
-#N struct mv_track float a float b float c float d float e float f
-float g float h;
+#N struct grid16_track float a float b float c float d float e float
+f float g float h;
+#N struct grid32_track float a float b float c float d float e float
+f float g float h float i float j float k float l float m float n float
+o float p;
 #N canvas 119 108 951 600 10;
 #X floatatom 230 139 5 0 300 0 - - -;
 #X obj 155 139 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
@@ -29,31 +32,31 @@ float g float h;
 #X obj 592 229 curve_read 10;
 #X obj 592 207 curve_read 9;
 #X obj 155 168 seq_midiclock;
-#X obj 381 178 grid16_track 1 1 manual;
+#N canvas 390 378 701 300 grid16_track-template 0;
+#X obj 109 64 struct grid16_track float a float b float c float d float
+e float f float g float h;
+#X restore 28 28 pd grid16_track-template;
+#N canvas 390 378 701 300 grid32_track-template 0;
+#X obj 109 64 struct grid32_track float a float b float c float d float
+e float f float g float h float i float j float k float l float m float
+n float o float p;
+#X restore 28 49 pd grid32_track-template;
 #X obj 381 201 grid16_track 2 2 manual;
 #X obj 381 223 grid16_track 3 3 manual;
 #X obj 381 247 grid16_track 4 4 manual;
 #X obj 380 275 grid16_track 5 5 manual;
 #X obj 380 300 grid16_track 6 6 manual;
 #X obj 379 327 grid16_track 7 7 manual;
-#N canvas 390 378 701 300 grid16_track-template 0;
-#X obj 109 64 struct grid16_track float a float b float c float d float
-e float f float g float h;
-#X restore 28 28 pd grid16_track-template;
-#N canvas 390 378 701 300 grid32_track-template 1;
-#X obj 109 64 struct grid32_track float a float b float c float d float
-e float f float g float h float i float j float k float l float m float
-n float o float p;
-#X restore 28 49 pd grid32_track-template;
+#X obj 381 178 grid32_track 1 1 manual;
 #X connect 0 0 26 1;
 #X connect 1 0 26 0;
-#X connect 2 0 27 0;
-#X connect 2 0 28 0;
 #X connect 2 0 29 0;
 #X connect 2 0 30 0;
 #X connect 2 0 31 0;
 #X connect 2 0 32 0;
 #X connect 2 0 33 0;
+#X connect 2 0 34 0;
+#X connect 2 0 35 0;
 #X connect 3 0 2 1;
 #X connect 5 0 6 0;
 #X connect 6 0 4 0;
@@ -81,21 +84,21 @@ n float o float p;
 #X connect 21 0 20 1;
 #X connect 21 0 24 1;
 #X connect 21 0 25 1;
-#X connect 21 0 27 1;
-#X connect 21 0 28 1;
 #X connect 21 0 29 1;
 #X connect 21 0 30 1;
 #X connect 21 0 31 1;
 #X connect 21 0 32 1;
 #X connect 21 0 33 1;
+#X connect 21 0 34 1;
+#X connect 21 0 35 1;
 #X connect 22 0 23 0;
 #X connect 23 0 7 0;
 #X connect 24 0 7 0;
 #X connect 25 0 7 0;
-#X connect 27 0 7 0;
-#X connect 28 0 7 0;
 #X connect 29 0 7 0;
 #X connect 30 0 7 0;
 #X connect 31 0 7 0;
 #X connect 32 0 7 0;
 #X connect 33 0 7 0;
+#X connect 34 0 7 0;
+#X connect 35 0 7 0;
