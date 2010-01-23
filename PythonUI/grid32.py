@@ -16,7 +16,7 @@ class Grid32Track():
         self.navButton2, self.navButton2rect         = __main__.load_image('navButton2.png','buttons')
         self.navButtonWide1, self.navButtonWide1rect = __main__.load_image('navButtonWide1.png','buttons')
         self.navButtonWide2, self.navButtonWide2rect = __main__.load_image('navButtonWide2.png','buttons')
-        self.optionsbg, self.optionsbgrect           = __main__.load_image('optionsBG.png','backgrounds')
+        self.optionsbg, self.optionsbgrect           = __main__.load_image('options32gBG.png','backgrounds')
         self.gobutton, self.gobuttonrect             = __main__.load_image('optsButtonGreen.png','buttons')
         self.stopbutton, self.stopbuttonrect         = __main__.load_image('optsButtonRed.png','buttons')
         
@@ -105,11 +105,11 @@ class Grid32Track():
 
     def drawMidiOptions(self):
         self.trackSurface.blit(self.optionsbg, (512,0))
-        for note in range(8):
+        for note in range(16):
             noteval = str(self.midinotes[note])
-            font = pygame.font.Font(self.fontName, 50)
+            font = pygame.font.Font(self.fontName, 25)
             notetext = font.render(noteval, 1, (255, 255, 255))
-            textpos = ((512 + 32 + 4),((note * 48) + 32 - 4))
+            textpos = ((512 + 32 + 4),((note * 24) + 32 - 4))
             self.trackSurface.blit(notetext, textpos)
         
         noteval = str(self.midiVelocity)
@@ -300,8 +300,8 @@ class Grid32Track():
         yval = pos[1]
         col = int(round(pos[0] / 32))
         row = int(round(pos[1] / 32))
-        if 16 < col < 21 and 0 < row < 13:
-            note = ((yval - 32) / 48)
+        if 16 < col < 19 and 0 < row < 13:
+            note = ((yval - 32) / 24)
             self.updateValue = note
         elif 26 < col < 31 and 0 < row < 5:
             self.keypadPress(xval - 864, yval - 32)
