@@ -216,11 +216,15 @@ class Grid32Track():
         if msg[0][2] == 'clear':
             self.clearGrid()
         else:
-            yval = (msg[0][2] - 1)
-            xval = (msg[0][3] - 1)
-            if yval >= 0 and xval >= 0:
-                dval = msg[0][4]
-                self.trackgrid[xval][yval] = dval
+            dataArray = msg[0][2]
+            dataArray = dataArray.split('-')
+            for data in dataArray[:]:
+                if data != '':
+                    data = data.split()
+                    yval = int(data[0]) - 1
+                    xval = int(data[1]) - 1
+                    bval = int(data[2])
+                    self.trackgrid[xval][yval] = bval
 
     def clearGrid(self):
         for col in range(32):
@@ -249,7 +253,7 @@ class Grid32Track():
         if row < 16:
             self.updateGridButton(col, row)
         else:
-            self.navButtonInterface(col)
+            self.navButtonInterface(int(round(pos[0] / 64)))
 
     
     def navButtonInterface(self, col):

@@ -17,7 +17,7 @@
 #X obj 143 100 t b b f;
 #X obj 46 238 pack 0 0 0;
 #X obj 46 201 i \$3;
-#X obj 46 272 outlet;
+#X obj 46 292 outlet;
 #X obj 200 146 sel 0 1 2;
 #X msg 200 167 1;
 #X msg 227 167 2;
@@ -41,6 +41,7 @@
 #X msg 277 342 traverse pd-grid32_track\$1_window;
 #X obj 304 194 r grid32_track\$1_activepattern;
 #X obj 143 441 set grid32_track \$2;
+#X obj 46 260 l2s;
 #X connect 0 0 41 0;
 #X connect 1 0 12 0;
 #X connect 2 0 6 0;
@@ -65,7 +66,7 @@
 #X connect 15 1 17 0;
 #X connect 15 2 9 0;
 #X connect 15 2 16 1;
-#X connect 16 0 18 0;
+#X connect 16 0 42 0;
 #X connect 17 0 16 0;
 #X connect 19 0 20 0;
 #X connect 19 1 21 0;
@@ -93,3 +94,4 @@
 #X connect 38 0 12 1;
 #X connect 39 0 4 0;
 #X connect 40 0 7 0;
+#X connect 42 0 18 0;

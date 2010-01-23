@@ -73,7 +73,7 @@ class Grid16Track():
             for row in range(8):
                 buttonval = self.trackgrid[col][row]
                 if self.followMode == 1:
-                    if col == __main__.mainObj.menu.stepNumber:
+                    if col == int(__main__.mainObj.menu.stepNumber/2):
                         buttonval += 3
                         
                 if buttonval == 0:
@@ -213,11 +213,12 @@ class Grid16Track():
         if msg[0][2] == 'clear':
             self.clearGrid()
         else:
-            yval = (msg[0][2] - 1)
-            xval = (msg[0][3] - 1)
-            if yval >= 0 and xval >= 0:
-                dval = msg[0][4]
-                self.trackgrid[xval][yval] = dval
+            dataArray = msg[0][2]
+            for button in dataArray:
+                yval = (dataArray[0] - 1)
+                xval = (dataArray[1] - 1)
+                bval = (dataArray[2])
+                self.trackgrid[xval][yval] = bval
 
     def clearGrid(self):
         for col in range(16):
