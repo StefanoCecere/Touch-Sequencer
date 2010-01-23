@@ -13,6 +13,8 @@ For questions you can check out the blog or email me at guy@notesandvolts.com
 
 I also hang around in IRC, #doomcentral on irc.freenode.net
 
+I'm now feeling that this is ready enough to start mentioning it to people so this is Version 1.0 Beta
+
 
 
 Intro
