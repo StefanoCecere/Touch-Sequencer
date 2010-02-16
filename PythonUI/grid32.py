@@ -94,14 +94,14 @@ class Grid32Track():
         for col in range(12):
             if col < 8:
                 if col == self.patternNumber:
-                    self.trackSurface.blit(self.navButton1, ((col * 64),512))
-                else:
                     self.trackSurface.blit(self.navButton2, ((col * 64),512))
+                else:
+                    self.trackSurface.blit(self.navButton1, ((col * 64),512))
             else:
                 if col == self.patternNumber:
-                    self.trackSurface.blit(self.navButtonWide1, ((((col - 8) * 128) + 512),512))
-                else:
                     self.trackSurface.blit(self.navButtonWide2, ((((col - 8) * 128) + 512),512))
+                else:
+                    self.trackSurface.blit(self.navButtonWide1, ((((col - 8) * 128) + 512),512))
 
     def drawMidiOptions(self):
         self.trackSurface.blit(self.optionsbg, (512,0))
