@@ -174,9 +174,11 @@ def load_image(name, subdir, colorkey=None):
 def sendOSCMessage(address, value):
 
 #    print address, value
+    global sendIP
+    global sendPort
 
-#    osc.sendMsg(address, value, '192.168.2.3', 9002)
-    osc.sendMsg(address, value, '127.0.0.1', 9004)
+    osc.sendMsg(address, value, '192.168.2.11', 9004)
+#    osc.sendMsg(address, value, '127.0.0.1', 9004)
 
 
 class Globject():
@@ -231,11 +233,22 @@ def main():
 
 
     global mainObj
+    
+    configFile = open('OSCadr.cfg', 'r')
+    for line in configFile:
+        line = line.split()
+        if line[0] == "sendPort":
+            sendPort = int(line[1])
+        if line[0] == "sendIP":
+            sendIP = line[1]
+        if line[0] == "listenPort":
+            listenPort = int(line[1])
+        
 
     pygame.init()
 
     osc.init()
-    osc.listen('127.0.0.1', 9001)
+    osc.listen('127.0.0.1', listenPort)
 
     mainObj = Globject()
     
