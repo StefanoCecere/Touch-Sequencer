@@ -244,6 +244,8 @@ def main():
             sendPort = int(line[1])
         if line[0] == "sendIP":
             sendIP = line[1]
+        if line[0] == "listenIP":
+            listenIP = int(line[1])
         if line[0] == "listenPort":
             listenPort = int(line[1])
         
@@ -251,7 +253,7 @@ def main():
     pygame.init()
 
     osc.init()
-    osc.listen('127.0.0.1', listenPort)
+    osc.listen(listenIP, listenPort)
 
     mainObj = Globject()
     
