@@ -176,9 +176,10 @@ def sendOSCMessage(address, value):
 #    print address, value
     global sendIP
     global sendPort
+    
+    print sendIP, sendPort
 
-    osc.sendMsg(address, value, '192.168.2.11', 9004)
-#    osc.sendMsg(address, value, '127.0.0.1', 9004)
+    osc.sendMsg(address, value, sendIP, sendPort)
 
 
 class Globject():
@@ -233,6 +234,8 @@ def main():
 
 
     global mainObj
+    global sendIP
+    global sendPort
     
     configFile = open('OSCadr.cfg', 'r')
     for line in configFile:
