@@ -10,7 +10,7 @@ from curve import *
 import socket
 
 from pygame.locals import *
-from pygame.compat import geterror
+#from pygame.compat import geterror
     
 class MainMenu():
 
