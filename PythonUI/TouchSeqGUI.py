@@ -7,6 +7,8 @@ from grid16 import *
 from grid32 import *
 from curve import *
 
+import socket
+
 from pygame.locals import *
 from pygame.compat import geterror
     
@@ -173,11 +175,8 @@ def load_image(name, subdir, colorkey=None):
 
 def sendOSCMessage(address, value):
 
-#    print address, value
     global sendIP
     global sendPort
-    
-    print sendIP, sendPort
 
     osc.sendMsg(address, value, sendIP, sendPort)
 
@@ -234,6 +233,7 @@ def main():
 
 
     global mainObj
+    
     global sendIP
     global sendPort
     
@@ -244,11 +244,11 @@ def main():
             sendPort = int(line[1])
         if line[0] == "sendIP":
             sendIP = line[1]
-        if line[0] == "listenIP":
-            listenIP = int(line[1])
         if line[0] == "listenPort":
             listenPort = int(line[1])
-        
+       
+
+    listenIP = socket.gethostbyname(socket.gethostname())
 
     pygame.init()
 
