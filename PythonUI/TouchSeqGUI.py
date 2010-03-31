@@ -27,6 +27,7 @@ class MainMenu():
         self.globalplay    = 0
         self.trackNo       = 0
         self.stepNumber    = 0
+        self.connected     = 0
         
         self.mainSurface = pygame.Surface((1024,600))
         self.mainSurface = self.mainSurface.convert()
@@ -48,9 +49,7 @@ class MainMenu():
             else:
                 self.playingTracks[track] = 0
             sendOSCMessage('/grid/track/control/play', [self.playingTracks[track]])
-            
         else:
-            
             mainObj.modeChange(self.trackTypes[track])
             
 
@@ -62,6 +61,7 @@ class MainMenu():
         trackNum  = (msg[0][2] - 1)
         trackType = msg[0][3]
         self.trackTypes[trackNum] = trackType
+        self.connected = 1
         
 
     def changeBpm(self, value):
@@ -77,8 +77,9 @@ class MainMenu():
         xval = int(round(pos[0] / 32))
         yval = int(round(pos[1] / 32))
         
-        bpmRect = ((20,2),(31,11))
-        playRect = ((22,14),(29,17))
+        bpmRect     = ((20,2),(31,11))
+        connectRect = ((22,12),(29,13))
+        playRect    = ((22,15),(29,17))
         
         if 18 < xval < 31 and 1 < yval < 11:
         
@@ -97,12 +98,16 @@ class MainMenu():
                 elif 27 < xval < 31:
                     self.changeBpm(-1)
                 
-        elif 20 < xval < 29 and 13 < yval < 17:
+        elif 20 < xval < 29 and 14 < yval < 18:
             if self.globalplay == 0:
                 self.globalplay = 1
             else:
                 self.globalplay = 0
             sendOSCMessage('/global_play', [self.globalplay])
+        
+        elif 20 < xval < 29 and 14 < yval < 18:
+            if self.connected == 0:
+                sendOSCMessage('/track_info', ['bang'])
 
     def drawMainScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
@@ -130,9 +135,14 @@ class MainMenu():
             self.mainSurface.blit(displaytext, textpos)
         
         if self.globalplay == 1:
-            self.mainSurface.blit(self.mainPlay, (672, 448))
+            self.mainSurface.blit(self.mainPlay, (672, 480))
         else:
-            self.mainSurface.blit(self.mainStop, (672, 448))
+            self.mainSurface.blit(self.mainStop, (672, 480))
+        
+        if self.connected == 1:
+            self.mainSurface.blit(self.mainPlay, (672, 384))
+        else:
+            self.mainSurface.blit(self.mainStop, (672, 384))
 
 
 
@@ -220,7 +230,6 @@ class Globject():
 
 
 def printStuff(*msg):
-    '''deals with 'print' tagged OSC addresses '''
 
     print 'printing in the printStuff function ', msg
     print 'the oscaddress is ', msg[0][0]
@@ -246,8 +255,8 @@ def main():
             sendIP = line[1]
         if line[0] == "listenPort":
             listenPort = int(line[1])
-       
 
+            
     listenIP = socket.gethostbyname(socket.gethostname())
 
     pygame.init()
@@ -273,13 +282,11 @@ def main():
     osc.bind(mainObj.grid32.editMidi, '/grid32/midi_params')
     osc.bind(mainObj.grid32.editPatternSeqLength, '/grid32/pattern_seq/length')
     osc.bind(mainObj.grid32.editPatternSeq, '/grid32/pattern_seq')
-
-    
+   
     osc.bind(mainObj.menu.trackInfo, '/main/track_info')
 
     osc.bind(mainObj.menu.seqStepNumber, '/main/stepnumber')
-    
-    sendOSCMessage('/track_info', ['bang'])
+
     
     loop = True
     while loop:
