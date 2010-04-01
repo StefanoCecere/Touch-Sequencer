@@ -118,7 +118,7 @@ class MainMenu():
             bpm = ' ' + str(self.bpm)
         else:
             bpm = str(self.bpm)
-        font = pygame.font.Font(pygame.font.match_font('arial') , 196)
+        font = pygame.font.SysFont('arial', 196)
         bpmtext = font.render(bpm, 1, (255, 255, 255))
         textpos = ((20 * 32),(3 * 32))
         self.mainSurface.blit(bpmtext, textpos)
@@ -131,7 +131,7 @@ class MainMenu():
                 self.mainSurface.blit(self.stopbutton, pos)
                 
             trackType = str(self.trackTypes[tracks])
-            font = pygame.font.Font(pygame.font.match_font('arial'), 45)
+            font = pygame.font.SysFont('arial', 45)
             displaytext = font.render(trackType, 1, (0, 0, 0))
             textpos = (16,(tracks * 60))
             self.mainSurface.blit(displaytext, textpos)
@@ -286,6 +286,7 @@ def main():
     osc.bind(mainObj.grid32.editPatternSeq, '/grid32/pattern_seq')
    
     osc.bind(mainObj.menu.trackInfo, '/main/track_info')
+#    osc.bind(printStuff, '/main/track_info')
 
     osc.bind(mainObj.menu.seqStepNumber, '/main/stepnumber')
 
