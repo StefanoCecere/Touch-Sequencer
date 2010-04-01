@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #Import Modules
-import os, pygame, osc
+import os, sys, pygame, osc
 
 from grid16 import *
 from grid32 import *
@@ -62,7 +62,6 @@ class MainMenu():
         trackType = msg[0][3]
         self.trackTypes[trackNum] = trackType
         self.connected = 1
-        print trackNum, trackType
         
 
     def changeBpm(self, value):
@@ -108,8 +107,12 @@ class MainMenu():
         
         elif 20 < xval < 29 and 11 < yval < 15:
             if self.connected == 0:
-                print "connected"
                 sendOSCMessage('/track_info', ['bang'])
+        
+        elif xval > 29 and yval < 1:
+            osc.dontListen()
+            pygame.quit()
+            sys.exit()
 
     def drawMainScreen(self):
         self.mainSurface.blit(self.mainBG, (0,0))
@@ -196,7 +199,7 @@ def sendOSCMessage(address, value):
 class Globject():
 
     def __init__(self):
-        self.screen = pygame.display.set_mode((1024, 600))
+        self.screen = pygame.display.set_mode((1024, 600), pygameFULLSCREEN)
         background = pygame.Surface(self.screen.get_size())
         self.background = background.convert()
         
@@ -288,7 +291,6 @@ def main():
 
     osc.bind(mainObj.menu.seqStepNumber, '/main/stepnumber')
 
-    
     loop = True
     while loop:
         clock.tick(60)
@@ -313,7 +315,7 @@ def main():
 
     osc.dontListen()
     pygame.quit()
-
+    sys.exit()
 
 
 if __name__ == '__main__':
