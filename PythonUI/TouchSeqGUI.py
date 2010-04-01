@@ -62,6 +62,7 @@ class MainMenu():
         trackType = msg[0][3]
         self.trackTypes[trackNum] = trackType
         self.connected = 1
+        print trackNum, trackType
         
 
     def changeBpm(self, value):
@@ -105,8 +106,9 @@ class MainMenu():
                 self.globalplay = 0
             sendOSCMessage('/global_play', [self.globalplay])
         
-        elif 20 < xval < 29 and 14 < yval < 18:
+        elif 20 < xval < 29 and 11 < yval < 15:
             if self.connected == 0:
+                print "connected"
                 sendOSCMessage('/track_info', ['bang'])
 
     def drawMainScreen(self):
