@@ -255,11 +255,10 @@ def main():
             sendPort = int(line[1])
         if line[0] == "sendIP":
             sendIP = line[1]
+        if line[0] == "listenIP":
+            listenIP = line[1]
         if line[0] == "listenPort":
             listenPort = int(line[1])
-
-            
-    listenIP = socket.gethostbyname(socket.gethostname())
 
     pygame.init()
 
